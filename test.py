@@ -1,19 +1,11 @@
-from time import *
-count = 0
-sum = 0
-for i in range(1000):
-    begin_time = time()
-    for i in range(10000000):
-        0.1024-0.5083
-    end_time = time()
-    run_time_1 = end_time-begin_time
-    begin_time = time()
-    for i in range(10000000):
-        1024-5083
-    end_time = time()
-    run_time_2 = end_time-begin_time
-    if run_time_1-run_time_2>0:
-        count+=1
-    sum+=1
-    print(sum)
-print("小数计算时间更长的概率为: {}".format(count/sum))
+import numpy as np
+EPSILON = 1e-6
+adjusted_distances = [0.1,0.2,0.3,0.4,0.5]
+#,0.6,0.7,0.8,0.25
+adjusted_probabilities = np.asarray([1.0 / max(d, EPSILON) for d in adjusted_distances])
+#print(adjusted_probabilities)
+adjusted_probabilities /= np.sum(adjusted_probabilities)
+#print(adjusted_probabilities)
+new_list=np.random.choice(adjusted_distances,p=[0.1,0.05,0.45,0.25,0.15])
+print(new_list)
+print([None] * 10)

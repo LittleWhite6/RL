@@ -939,7 +939,7 @@ def get_random_capacities(n):
             50: 40,
             100: 50
         }
-        capacities[0] = depot_capacity_map.get(n - 1, 50)
+        capacities[0] = depot_capacity_map.get(n - 1, 50)   #dict.get(key,default) 第一个参数为键值，第二个参数为默认值，返回值为键值对应的值，不存在则为默认值
         for i in range(1, n):
             capacities[i] = np.random.randint(9) + 1
     return capacities
@@ -970,7 +970,7 @@ class Graph:
                 self.distance_matrix[to_index][from_index] = calculate_replacement_cost(problem, nodes[to_index][1], nodes[from_index])
 
     def find_negative_cycle(self):
-        distance = [float('inf')] * self.num_nodes
+        distance = [float('inf')] * self.num_nodes  #float('inf')表示无穷大
         predecessor = [None] * self.num_nodes
         source = 0
         distance[source] = 0.0
