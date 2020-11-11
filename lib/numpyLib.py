@@ -33,3 +33,13 @@ print(adjusted_probabilities)
 #python正无穷float("inf"), 负无穷float("-inf"), 0*float("inf")=nan
 print(float("inf")+1)
 print(float("inf")*0)
+
+
+'''np.mean(a,axis,dtype,out,keepdims)
+求均值，参数axis不设置值，对m*n个数求均值，返回一个实数
+axis=0,压缩行，对各列求均值，返回1*n矩阵
+axis=1,压缩列，对各行求均值，返回m*1矩阵'''
+a=np.array([[1,2],[3,4]])
+print(np.mean(a))
+print(np.mean(a,axis=0))
+print(np.mean(a,axis=1))

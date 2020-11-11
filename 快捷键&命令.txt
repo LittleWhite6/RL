@@ -1,0 +1,17 @@
+Vscode:
+ctrl + 鼠标左击 跳转定义
+alt + ← 返回
+Shift + alt + f 自动调整格式
+Ctrl + s 保存
+Ctrl + x 剪切
+Ctrl + c 复制
+Ctrl + v 保存
+Ctrl + +/- 放大/缩小界面
+
+Linux:
+top 查看CPU运行状况
+nvidia-smi 查看GPU运行状况
+pip3 list 查看已经安装模块列表
+python3 --version 查看python3版本
+python3 进入python3环境
+python3 ***.py 运行python文件

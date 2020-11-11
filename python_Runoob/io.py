@@ -110,4 +110,7 @@ with open("python_Runoob/test.txt","a+") as f:
 #f.truncate([size])从文件的首行首字符开始截断，截断文件为size个字符，无size表示从当前位置截断；截断之后后面的所有字符被删除，其中windows系统下的换行代表俩个字符
 #f.writelines(sequence)向文件写入一个序列字符串列表，如果需要换行则要自己加入每行的换行符
 
-f.closed
+f.close()
+
+print('\t\t'+"123") # \t 表示空四个字符，也成缩进，相当于按一下Tab键
+print('\n\n'+"Runoob")  # \n 表示换行
