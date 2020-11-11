@@ -1,19 +1,14 @@
 import tensorflow as tf
 
 '''
-def test():
-    state = tf.Variable(0, name='counter')
-    print(state.name)
-    one = tf.constant(1)
-    new_value = tf.add(state, one)
-    update = tf.assign(state, new_value)
-    init = tf.global_variables_initializer()
-    with tf.Session() as sess:
-        sess.run(init)
-        for __ in range(3):
-            sess.run(update)
-            print(sess.run(state))
-            # assign未被执行，ref值不更新，assign只能给变量赋值，常量报错
+assign(ref,value,validate_shape=None,use_locking=None,name=None)： 
+通过将value赋给ref来更新ref. 此操作输出在赋值后保留新值ref的张量. 这使得更易于链接需要使用重置值得操作.
+ARGS:
+    ref: 一个可变的张量，来自变量节点，节点可能未初始化
+    value: 张量.必须具有与ref相同的类型，是要分配给变量的值
+    validate_shape: 一个可选的bool,默认为ture. 如果为true，则操作将验证value的形状是否与分配给的张量的形状相匹配； 如果为false,ref将对值的形状进行引用
+    use_locking: 一个可选的bool. 默认为True. 如果为True, 则分配将受锁保护；否则，该行为是未定义的，但可能会显示较少的争用.
+    name: 操作的名称
 '''
 
 def test_1():
