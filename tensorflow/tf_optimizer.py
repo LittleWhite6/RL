@@ -17,3 +17,4 @@ tf.summary.FileWriter("logs",g).close()
 print(g.get_collection('variables'))    #显示计算图中的变量
 print(g.get_collection('train_variables'))  #显示可以训练的变量
 #Tensorflow使用Session来执行定义好的计算图
+#Adam与momentum是目前最好用的optimizer
