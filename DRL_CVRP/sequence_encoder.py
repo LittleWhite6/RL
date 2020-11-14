@@ -17,7 +17,7 @@ def embed_seq(input_seq, from_, to_, is_training, BN=True, initializer=tf.contri
 		embedded_input = tf.nn.conv1d(input_seq, W_embed, 1, "VALID", name="embedded_input")
 		if BN:
 			embedded_input = tf.layers.batch_normalization(embedded_input, axis=2, training=True, name='layer_norm', reuse=None)
-		return embedded_input
+		return embedded_input	#第一次调用后tensor.shape为[None,100,64]
 
 
 # Apply multihead attention to a 3d tensor with shape [batch_size, seq_length, n_hidden].

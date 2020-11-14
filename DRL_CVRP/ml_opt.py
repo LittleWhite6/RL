@@ -1385,20 +1385,19 @@ def embedding_net_2(input_):
         architecture_type = 0
         if architecture_type == 0:
             x = embed_seq(input_seq=input_, from_=config.input_embedded_trip_dim_2, to_=config.num_embedded_dim_1, is_training=True,
-                          BN=True, initializer=tf.contrib.layers.xavier_initializer())
-
+                          BN=True, initializer=tf.contrib.layers.xavier_initializer())  ##[?,100,64]
             layer_attention = encode_seq(input_seq=x, input_dim=config.num_embedded_dim_1, num_stacks=1, num_heads=8,
-                                         num_neurons=64, is_training=True, dropout_rate=0.1)
+                                         num_neurons=64, is_training=True, dropout_rate=0.1)    #[?,100,64]
             # layer_attention = tf.reshape(layer_attention, [-1, (config.num_training_points) * config.num_embedded_dim_1])
             # layer_2 = tf.contrib.layers.fully_connected(layer_attention, config.num_embedded_dim_2, activation_fn=tf.nn.relu)
             # layer_2 = tf.nn.dropout(layer_2, keep_prob)
-            layer_2 = tf.reduce_sum(layer_attention, axis=1)
+            layer_2 = tf.reduce_sum(layer_attention, axis=1)    #[?,64]
         else:
             #TODO:
             x = embed_seq(input_seq=input_, from_=config.input_embedded_trip_dim_2, to_=config.num_embedded_dim_1, is_training=True, BN=False, initializer=tf.contrib.layers.xavier_initializer())
             x = tf.reduce_sum(x, axis=1)
             layer_2 = tf.nn.relu(x)
-    return layer_2
+    return layer_2  
 
 
 def embedding_net(input_):
@@ -1497,9 +1496,9 @@ def embed_solution_with_attention(problem, solution):
 
 
 TEST_X = tf.placeholder(tf.float32, [None, config.num_training_points, config.input_embedded_trip_dim_2])
-embedded_x = embedding_net_2(TEST_X)
-env_observation_space_n = config.num_history_action_use * 2 + 5
-action_labels_placeholder = tf.placeholder("float", [None, config.num_actions - 1])
+embedded_x = embedding_net_2(TEST_X)    #[?,64]
+env_observation_space_n = config.num_history_action_use * 2 + 5 #5
+action_labels_placeholder = tf.placeholder("float", [None, config.num_actions - 1]) 
 
 
 class PolicyEstimator():
@@ -1690,8 +1689,8 @@ def calculate_solution_similarity(solutions):
     return len(edge_set)
 
 
-gpu_config = tf.ConfigProto()
-gpu_config.gpu_options.allow_growth = True
+gpu_config = tf.ConfigProto()   #tf.configProto用来在创建session时，对session进行参数配置
+gpu_config.gpu_options.allow_growth = True  #动态申请显存
 with tf.Session(config=gpu_config) as sess:
     policy_estimator = PolicyEstimator()
     initialize_uninitialized(sess)
