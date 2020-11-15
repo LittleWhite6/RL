@@ -109,7 +109,7 @@ class Problem:
         self.no_improvement_at = {}
         self.num_solutions = 0
         self.num_traversed = np.zeros((len(locations), len(locations)))
-        self.distance_hashes = set()
+        self.distance_hashes = set()    #set() 函数创建一个无序不重复元素集
 
     def record_solution(self, solution, distance):
         self.num_solutions += 1.0 / distance
@@ -1121,7 +1121,7 @@ def construct_solution(problem, existing_solution=None, step=0):
     capacity_left = problem.get_capacity(0)
     i = start_customer_index
     while i <= n:
-        random_index = np.random.randint(low=i, high=n+1)
+        random_index = np.random.randint(low=i, high=n+1)   #randint取值范围不包括high
 
         # if len(trip) > 1:
         #     min_index, min_distance = random_index, float('inf')
@@ -1150,7 +1150,7 @@ def construct_solution(problem, existing_solution=None, step=0):
         # if len(trip) > 1:
         #     to_indices.append(0)
         #     adjusted_distances.append(calculate_adjusted_distance_between_indices(problem, trip[-1], 0))
-        for j in range(i, n + 1):
+        for j in range(i, n + 1):   #不包括n+1
             if problem.get_capacity(customer_indices[j]) > capacity_left:
                 continue
             to_indices.append(j)
@@ -1327,14 +1327,14 @@ def get_num_points(config):
 
 
 def generate_problem():
-    np.random.seed(config.problem_seed)
-    random.seed(config.problem_seed)
+    np.random.seed(config.problem_seed) #设置随机数种子
+    random.seed(config.problem_seed)    #random.seed()方法改变随机数生成器的种子
     config.problem_seed += 1
 
     num_sample_points = get_num_points(config)
     if config.problem == 'vrp':
         num_sample_points += 1
-    locations = np.random.uniform(size=(num_sample_points, 2))
+    locations = np.random.uniform(size=(num_sample_points, 2))  #sample中每个point的x_axis,y_axis是随机的服从0-1均匀分布的值
     if config.problem == 'vrp':
         if config.depot_positioning == 'C':
             locations[0][0] = 0.5
@@ -1640,7 +1640,7 @@ def env_step(step, state, problem, min_distance, solution, distance, action, rec
 
 
 def format_print(value):
-    return round(float(value), 2)
+    return round(float(value), 2)   #round函数很简单，对浮点数进行近似取值，第一个参数是一个浮点数，第二个参数是保留的小数位数，可选，如果不写的话默认保留到整数。
 
 
 def format_print_array(values):
@@ -1651,7 +1651,7 @@ def format_print_array(values):
 
 
 def initialize_uninitialized(sess):
-    global_vars = tf.global_variables()
+    global_vars = tf.global_variables() #该函数返回一个 Variable 对象列表.
     is_not_initialized = sess.run([tf.is_variable_initialized(var) for var in global_vars])
     not_initialized_vars = [v for (v, f) in zip(global_vars, is_not_initialized) if not f]
 
@@ -1692,15 +1692,15 @@ def calculate_solution_similarity(solutions):
 gpu_config = tf.ConfigProto()   #tf.configProto用来在创建session时，对session进行参数配置
 gpu_config.gpu_options.allow_growth = True  #动态申请显存
 with tf.Session(config=gpu_config) as sess:
-    policy_estimator = PolicyEstimator()
-    initialize_uninitialized(sess)
+    policy_estimator = PolicyEstimator()    #策略评估类实例
+    initialize_uninitialized(sess)  #初始化全部变量
     print(sess.run(tf.report_uninitialized_variables()))
     variables_names = [v.name for v in tf.trainable_variables()]
     values = sess.run(variables_names)
     for k, v in zip(variables_names, values):
         print("Variable={}, Shape={}".format(k, v.shape))
-    sys.stdout.flush()
-    saver = tf.train.Saver()
+    sys.stdout.flush()  #刷新缓冲区
+    saver = tf.train.Saver()    #用来保存模型
     if config.model_to_restore is not None:
         saver.restore(sess, config.model_to_restore)
 
@@ -1708,7 +1708,7 @@ with tf.Session(config=gpu_config) as sess:
     steps = []
     consolidated_distances, consolidated_steps = [], []
     timers = []
-    num_checkpoint = int(config.max_rollout_steps/config.step_interval)
+    num_checkpoint = int(config.max_rollout_steps/config.step_interval) #20000/5000
     step_record = np.zeros((2, num_checkpoint))
     distance_record = np.zeros((2, num_checkpoint))
     start = datetime.datetime.now()
