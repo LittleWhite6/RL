@@ -43,3 +43,6 @@ a=np.array([[1,2],[3,4]])
 print(np.mean(a))
 print(np.mean(a,axis=0))
 print(np.mean(a,axis=1))
+
+np.random.choice(5, 3, p=[0.1, 0, 0.3, 0.6, 0])
+#choice(a, size=None, replace=True, p=None)： a表示需要随机选择的列表，size表示随机选择的数据的个数，replace表示数据是否有放回，p表示每个数据被选中的概率，要与a的个数相同

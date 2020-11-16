@@ -7,6 +7,14 @@ num_traversed = np.zeros((101, 101))
 
 customer_indices = list(range(100 + 1))
 #print(customer_indices)
+import numpy as np
+import datetime
 
-for j in range(1,101):
-    print(j)
+f=open("results.txt",'w+')
+
+#print(type(np.random.uniform(size=(10,2))))
+
+#print(datetime.datetime.now())
+
+for i in range(0,10):
+    print(i,file=f)

@@ -1480,11 +1480,11 @@ def embed_solution_with_attention(problem, solution):
         n = len(path) - 1
         consumption = calculate_consumption(problem, path)
         for index in range(1, n):
-            customer = path[index]
-            embedded_input = []
+            customer = path[index]  #customer表示节点编号
+            embedded_input = [] #由问题和解决方案特定的状态特征，一个8列的列表
             embedded_input.append(problem.get_capacity(customer))
             embedded_input.extend(problem.get_location(customer))
-            embedded_input.append(problem.get_capacity(0) - consumption[-1])
+            embedded_input.append(problem.get_capacity(0) - consumption[-1])    #Free capacity
             embedded_input.extend(problem.get_location(path[index - 1]))
             embedded_input.extend(problem.get_location(path[index + 1]))
             embedded_input.append(problem.get_distance(path[index - 1], customer))

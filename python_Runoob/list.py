@@ -94,3 +94,11 @@ print(a)
 #list.copy()复制列表
 a=random.copy()
 print("复制random给a列表：",a)
+
+#append与extend区别
+x = [1, 2, 3]
+x.append([4, 5])
+print (x)
+x = [1, 2, 3]
+x.extend([4, 5])
+print (x)
