@@ -15,6 +15,6 @@ f=open("results.txt",'w+')
 #print(type(np.random.uniform(size=(10,2))))
 
 #print(datetime.datetime.now())
-
-for i in range(0,10):
-    print(i,file=f)
+list1=[1,2,3,4,5,6,1,2,3,4,5]
+list1=list1[:5]
+print(list1)
