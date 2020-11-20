@@ -1193,7 +1193,7 @@ def reconstruct_solution_by_exchange(problem, existing_solution, paths_ruined):
         return []
 
 
-def reconstruct_solution(problem, existing_solution, step):
+def reconstruct_solution(problem, existing_solution, step): #原理？
     distance_hash = round(calculate_solution_distance(problem, existing_solution) * 1e6)
     if config.detect_negative_cycle and distance_hash not in problem.distance_hashes:
         problem.add_distance_hash(distance_hash)
@@ -1931,7 +1931,7 @@ with tf.Session(config=gpu_config) as sess:
                 min_distance = next_distance
                 min_step = step
                 best_solution = copy.deepcopy(next_solution)
-            if (step + 1) % config.step_interval == 0:
+            if (step + 1) % config.step_interval == 0:  #print information every 500 steps (in one index_sample)
                 print('rollout_num={}, index_sample={}, min_distance={}, min_step={}'.format(
                     step + 1, index_sample, min_distance, min_step
                 ))
@@ -2064,7 +2064,7 @@ with tf.Session(config=gpu_config) as sess:
                     filtered_advantages = filtered_advantages[:end]
                     filtered_actions = filtered_actions[:end]
                     num_states = len(filtered_states)
-                    if config.use_attention_embedding and num_states > config.batch_size:
+                    if config.use_attention_embedding and num_states > config.batch_size:   #batch_size=1000
                         downsampled_indices = np.random.choice(range(num_states), config.batch_size, replace=False)
                         filtered_states = np.asarray(filtered_states)[downsampled_indices]
                         filtered_trips = np.asarray(filtered_trips)[downsampled_indices]

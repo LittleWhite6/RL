@@ -46,3 +46,27 @@ print(np.mean(a,axis=1))
 
 np.random.choice(5, 3, p=[0.1, 0, 0.3, 0.6, 0])
 #choice(a, size=None, replace=True, p=None)： a表示需要随机选择的列表，size表示随机选择的数据的个数，replace表示数据是否有放回，p表示每个数据被选中的概率，要与a的个数相同
+
+
+'''numpy.argmax(array, axis) 用于返回一个numpy数组中最大值的索引值。
+当一组中同时出现几个最大值时，返回第一个最大值的索引值。
+axis的取值为0和1，对应剥掉的中括号，将里面的内容直接按逗号分隔：
+0 —— 外层(按列找最大值索引)
+1 —— 内层(按行找最大值索引)'''
+one_dim_array = np.array([1, 4, 5, 3, 7, 2, 6])
+print(np.argmax(one_dim_array))
+two_dim_array = np.array([[1, 3, 5], [0, 4, 3]])
+max_index_axis0 = np.argmax(two_dim_array, axis = 0)
+max_index_axis1 = np.argmax(two_dim_array, axis = 1)
+print(max_index_axis0)
+print(max_index_axis1)
+
+
+'''np.arange([start, ]stop, [step, ]dtype=None)
+作用:   arange函数用于创建等差数组'''
+nd1 = np.arange(5)      #array([0, 1, 2, 3, 4])
+nd2 = np.arange(1,5)    #array([1, 2, 3, 4])
+nd3 = np.arange(1,5,2)  #nd3 = np.arange(1,5,2)
+print(nd1)
+print(nd2)
+print(nd3)

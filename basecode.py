@@ -15,6 +15,9 @@ f=open("results.txt",'w+')
 #print(type(np.random.uniform(size=(10,2))))
 
 #print(datetime.datetime.now())
-list1=[1,2,3,4,5,6,1,2,3,4,5]
-list1=list1[:5]
-print(list1)
+filtered_actions=[]
+for i in range(300):
+    filtered_actions.append(i)
+downsampled_indices = np.random.choice(20, 10, replace=False)
+print(downsampled_indices)
+print(np.asarray(filtered_actions)[downsampled_indices])
