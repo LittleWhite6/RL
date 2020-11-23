@@ -11,7 +11,7 @@ import sys  #sys模块提供访问由解释器使用或维护的变量的接口�
 import tensorflow as tf
 from tensorflow.contrib import rnn
 from sequence_encoder import encode_seq, embed_seq
-
+import matplotlib.pyplot as plt
 
 EPSILON = 1e-6
 
@@ -37,7 +37,7 @@ def get_config(args=None):
     parser.add_argument('--depot_positioning', default='R', help="{R, C, E}")
     parser.add_argument('--customer_positioning', default='R', help="{R, C, RC}")
 
-    parser.add_argument('--num_training_points', type=int, default=100, help="size of the problem for training")
+    parser.add_argument('--num_training_points', type=int, default=100, help="size of the problem for training") 
     parser.add_argument('--num_test_points', type=int, default=100, help="size of the problem for testing")
     parser.add_argument('--num_episode', type=int, default=40000, help="number of training episode")
     parser.add_argument('--max_num_rows', type=int, default=2000000, help="")
@@ -51,7 +51,7 @@ def get_config(args=None):
     parser.add_argument('--use_rl_loss', type=str2bool, nargs='?', const=True, default=True, help="")  #default=True
     parser.add_argument('--use_attention_embedding', type=str2bool, nargs='?', const=True, default=True, help="")
     parser.add_argument('--epsilon_greedy', type=float, default=0.05, help="")
-    parser.add_argument('--sample_actions_in_rollout', type=str2bool, nargs='?', const=True, default=True, help="")
+    parser.add_argument('--sample_actions_in_rollout', type=str2bool, nargs='?', const=True, default=True, help="")    #default=True
     parser.add_argument('--num_active_learning_iterations', type=int, default=1, help="")
     parser.add_argument('--max_no_improvement', type=int, default=6, help="")
     parser.add_argument('--debug_mode', type=str2bool, nargs='?', const=True, default=True, help="")    #default=False
@@ -1294,7 +1294,7 @@ def reconstruct_solution(problem, existing_solution, step): #原理？
         solution.append([0, 0])
     improved_solution = copy.deepcopy(existing_solution)
     solution_index = 0
-    for path_index in sorted(paths_ruined):
+    for path_index in sorted(paths_ruined): #sorted默认升序
         improved_solution[path_index] = copy.deepcopy(solution[solution_index])
         solution_index += 1
     problem.mark_change_at(step, paths_ruined)
@@ -1625,17 +1625,21 @@ def env_generate_state(min_distance=None, state=None, action=None, distance=None
         next_state.append(action)
     return next_state
 
-
+count=0
 def env_step(step, state, problem, min_distance, solution, distance, action, record_time=True):
+    global count
     start_timer = datetime.datetime.now()
-    next_trip, next_distance = env_act(step, problem, min_distance, solution, distance, action)
+    next_trip, next_distance = env_act(step, problem, min_distance, solution, distance, action) #next_trip=env_act()里的next_solution
     next_state = env_generate_state(min_distance, state, action, distance, next_distance)
     reward = distance - next_distance
     end_timer = datetime.datetime.now()
-    if record_time:
+    if record_time: #action 0 ???
         action_timers[action * 2] += 1
         action_timers[action * 2 + 1] += (end_timer - start_timer).total_seconds()
     done = (datetime.datetime.now() - env_start_time).total_seconds() >= config.max_rollout_seconds
+    count+=1
+    if(count==10000):
+        pass
     return next_state, reward, done, next_trip, next_distance
 
 
@@ -1689,6 +1693,54 @@ def calculate_solution_similarity(solutions):
     return len(edge_set)
 
 
+def get_color(curr_color):
+    if curr_color == 0:
+        return 'b'
+    if curr_color == 1:
+        return 'g'
+    if curr_color == 2:
+        return 'r'
+    if curr_color == 3:
+        return 'c'
+    if curr_color == 4:
+        return 'm'
+    if curr_color == 5:
+        return 'y'
+    if curr_color == 6:
+        return 'k'
+    return 'r'
+
+
+def paint(problem, solution):
+    for i in range(len(problem.locations)):  # 坐标放大
+        problem.locations[i][0] *= 1000
+        problem.locations[i][1] *= 1000
+    x = []
+    y = []
+    curr_color = 0
+    for i in range(len(solution)):
+        for j in range(len(solution[i])):
+            x.append(problem.locations[solution[i][j]][0])
+            y.append(problem.locations[solution[i][j]][1])
+            # one route exist
+        for index in range(1, len(x)):
+            l_x = []
+            l_y = []
+            l_x.append(x[index-1])
+            l_x.append(x[index])
+            l_y.append(y[index-1])
+            l_y.append(y[index])
+            plt.plot(l_x, l_y, color=get_color(curr_color))
+            plt.scatter(l_x, l_y, c='black')
+        x = []
+        y = []
+        curr_color += 1
+        if curr_color > 6:
+            curr_color = 0
+    plt.show()
+    plt.pause(0.1)
+    plt.close()
+
 gpu_config = tf.ConfigProto()   #tf.configProto用来在创建session时，对session进行参数配置
 gpu_config.gpu_options.allow_growth = True  #动态申请显存
 f = open("results.txt", "a+")
@@ -1719,7 +1771,7 @@ with tf.Session(config=gpu_config) as sess:
     tf.set_random_seed(seed)
 
     Transition = collections.namedtuple("Transition", ["state", "trip", "next_distance", "action", "reward", "next_state", "done"])
-    for index_sample in range(config.num_episode):
+    for index_sample in range(config.num_episode):  #!!!!!!最外层循环 index_sample,每一次生成一个新的problem!!!!!!!
         states = []
         trips = []
         actions = []
@@ -1887,8 +1939,8 @@ with tf.Session(config=gpu_config) as sess:
                     step + 1, index_sample, min_distance, min_step
                 ))
                 temp_timers = np.asarray(action_timers)
-                temp_count_timers = temp_timers[::2]
-                temp_time_timers = temp_timers[1::2]
+                temp_count_timers = temp_timers[::2]    #存储每一个动作总共做了多少次
+                temp_time_timers = temp_timers[1::2]    #存储每一个动作所花的时间
                 print('time ={}'.format('\t\t'.join([str(x) for x in temp_time_timers])))
                 print('count={}'.format('\t\t'.join([str(x) for x in temp_count_timers])))
             if done:
@@ -2042,5 +2094,9 @@ with tf.Session(config=gpu_config) as sess:
 
     # save_path = saver.save(sess, "./rollout_model.ckpt")
     # print("Model saved in path: %s" % save_path)
+<<<<<<< HEAD
     print('solving time = {}'.format(datetime.datetime.now() - start), file=f)
     f.close()
+=======
+    print('solving time = {}'.format(datetime.datetime.now() - start))
+>>>>>>> e6d74bd60ebbb26965ee08d6962cb95581d9cd6a
