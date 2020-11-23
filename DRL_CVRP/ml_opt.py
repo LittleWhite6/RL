@@ -2094,9 +2094,5 @@ with tf.Session(config=gpu_config) as sess:
 
     # save_path = saver.save(sess, "./rollout_model.ckpt")
     # print("Model saved in path: %s" % save_path)
-<<<<<<< HEAD
     print('solving time = {}'.format(datetime.datetime.now() - start), file=f)
     f.close()
-=======
-    print('solving time = {}'.format(datetime.datetime.now() - start))
->>>>>>> e6d74bd60ebbb26965ee08d6962cb95581d9cd6a
