@@ -1342,6 +1342,9 @@ def generate_problem():
         elif config.depot_positioning == 'E':
             locations[0][0] = 0.0
             locations[0][1] = 0.0
+        else:  # Random
+            locations[0][0] = random.randint(0, 1000)/1000
+            locations[0][1] = random.randint(0, 1000)/1000
         if config.customer_positioning in {'C', 'RC'}:
             S = np.random.randint(6) + 3
             centers = locations[1 : (S + 1)]

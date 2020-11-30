@@ -37,7 +37,6 @@ random.choice(sequence)从序列中获取一个随机元素
 lst = ['python', 'C', 'C++', 'java']
 str1 = {'I love Python'}
 print(random.choice(lst))
-print(random.choice(str1))
 
 
 '''
