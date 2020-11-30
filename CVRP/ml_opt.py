@@ -45,16 +45,16 @@ def get_config(args=None):
     parser.add_argument('--batch_size', type=int, default=1000, help='batch size')
     parser.add_argument('--max_rollout_steps', type=int, default=20000, help="maximum rollout steps")
     parser.add_argument('--max_rollout_seconds', type=int, default=1000, help="maximum rollout time in seconds")
-    parser.add_argument('--use_cyclic_rollout', type=str2bool, nargs='?', const=True, default=False, help="use cyclic rollout")
-    parser.add_argument('--use_random_rollout',type=str2bool, nargs='?', const=True, default=False, help="use random rollout")
+    parser.add_argument('--use_cyclic_rollout', type=str2bool, nargs='?', const=True, default=True, help="use cyclic rollout")  #default=True
+    parser.add_argument('--use_random_rollout',type=str2bool, nargs='?', const=True, default=True, help="use random rollout")  #default=True
     parser.add_argument('--detect_negative_cycle', type=str2bool, nargs='?', const=True, default=False, help="")
-    parser.add_argument('--use_rl_loss', type=str2bool, nargs='?', const=True, default=True, help="")
+    parser.add_argument('--use_rl_loss', type=str2bool, nargs='?', const=True, default=True, help="")  #default=True
     parser.add_argument('--use_attention_embedding', type=str2bool, nargs='?', const=True, default=True, help="")
     parser.add_argument('--epsilon_greedy', type=float, default=0.05, help="")
     parser.add_argument('--sample_actions_in_rollout', type=str2bool, nargs='?', const=True, default=True, help="")    #default=True
     parser.add_argument('--num_active_learning_iterations', type=int, default=1, help="")
     parser.add_argument('--max_no_improvement', type=int, default=6, help="")
-    parser.add_argument('--debug_mode', type=str2bool, nargs='?', const=True, default=False, help="")
+    parser.add_argument('--debug_mode', type=str2bool, nargs='?', const=True, default=True, help="")    #default=False
     parser.add_argument('--debug_steps', type=int, default=1, help="")
     parser.add_argument('--num_actions', type=int, default=27, help="dimension of action space")
     parser.add_argument('--max_num_customers_to_shuffle', type=int, default=20, help="")
@@ -67,7 +67,7 @@ def get_config(args=None):
     parser.add_argument('--policy_learning_rate', type=float, default=0.001, help="learning rate of policy network")
     parser.add_argument('--hidden_layer_dim', type=int, default=64, help="dimension of hidden layer in policy network")
     parser.add_argument('--num_history_action_use', type=int, default=0, help="number of history actions used in the representation of current state")
-    parser.add_argument('--use_history_action_distribution', type=str2bool, nargs='?', const=True, default=False, help="")
+    parser.add_argument('--use_history_action_distribution', type=str2bool, nargs='?', const=True, default=True, help="")   #default=False
     parser.add_argument('--step_interval', type=int, default=500)
 
     # './rollout_model_1850.ckpt'
@@ -1746,14 +1746,17 @@ def paint(problem, solution):
 
 gpu_config = tf.ConfigProto()   #tf.configProto用来在创建session时，对session进行参数配置
 gpu_config.gpu_options.allow_growth = True  #动态申请显存
+f = open("results.txt", "a+")
 with tf.Session(config=gpu_config) as sess:
     policy_estimator = PolicyEstimator()    #策略评估类实例
     initialize_uninitialized(sess)  #初始化全部变量
-    print(sess.run(tf.report_uninitialized_variables()))
+    print(sess.run(tf.report_uninitialized_variables()), file=f)
+    f.flush()
     variables_names = [v.name for v in tf.trainable_variables()]
     values = sess.run(variables_names)
     for k, v in zip(variables_names, values):
-        print("Variable={}, Shape={}".format(k, v.shape))
+        print("Variable={}, Shape={}".format(k, v.shape), file=f)
+        f.flush()
     sys.stdout.flush()  #刷新缓冲区
     saver = tf.train.Saver()    #用来保存模型
     if config.model_to_restore is not None:
@@ -1802,8 +1805,8 @@ with tf.Session(config=gpu_config) as sess:
                     format_print(np.mean(consolidated_distances[max(0, len(consolidated_distances) - 1000):])),
                     format_print(consolidated_distances[-1]), consolidated_steps[-1],
                     formatted_timers[:4]
-                ))
-                sys.stdout.flush()
+                ), file=f)
+                f.flush()
             else:
                 formatted_timers = format_print_array(np.mean(np.asarray(timers), axis=0))
                 for index in range(num_checkpoint):
@@ -1811,10 +1814,10 @@ with tf.Session(config=gpu_config) as sess:
                         (index + 1) * config.step_interval, index_sample, ((index_sample - 1) * distance_record[0, index] + distance_record[1, index]) / index_sample,
                         ((index_sample - 1) * step_record[0, index] + step_record[1, index]) / index_sample, distance_record[1, index],
                         step_record[1, index], formatted_timers[:4]
-                    ))
+                    ), file=f)
                     step_record[0, index] = ((index_sample - 1) * step_record[0, index] + step_record[1, index]) / index_sample
                     distance_record[0, index] = ((index_sample - 1) * distance_record[0, index] + distance_record[1, index]) / index_sample
-                sys.stdout.flush()
+                f.flush()
 
         problem = generate_problem()
         solution = construct_solution(problem)
@@ -1884,7 +1887,7 @@ with tf.Session(config=gpu_config) as sess:
                 elif random.uniform(0, 1) < 0.05:
                     action_label = [0] * config.num_actions
                     action_index = 0
-                    min_action_time = sys.maxint
+                    min_action_time = sys.maxsize
                     rewards = []
                     action_times = []
                     for action_to_label in range(1, config.num_actions):
@@ -1977,9 +1980,11 @@ with tf.Session(config=gpu_config) as sess:
         distances.append(min_distance)
         steps.append(min_step)
         if validate_solution(problem, best_solution, min_distance):
-            print('solution={}'.format(best_solution))
+            print('solution={}'.format(best_solution), file=f)
+            f.flush()
         else:
-            print('invalid solution')
+            print('invalid solution', file=f)
+            f.flush()
         if not (config.use_cyclic_rollout or config.use_random_rollout):
             future_best_distances = [0.0] * len(episode)
             future_best_distances[-1] = episode[len(episode) - 1].next_distance
@@ -2040,9 +2045,10 @@ with tf.Session(config=gpu_config) as sess:
             actions = np.reshape(np.asarray(actions), (-1))
             advantages = np.reshape(np.asarray(advantages), (-1)).astype("float32")
             if config.use_rl_loss:
-                print('num_random_actions={}'.format(num_random_actions))
-                print('actions={}'.format(actions[:100]).replace('\n', ''))
-                print('advantages={}'.format(advantages[:100]).replace('\n', ''))
+                print('num_random_actions={}'.format(num_random_actions), file=f)
+                print('actions={}'.format(actions[:100]).replace('\n', ''), file=f)
+                print('advantages={}'.format(advantages[:100]).replace('\n', ''), file=f)
+                f.flush()
                 if config.model_to_restore is None and index_sample <= config.max_num_training_epsisodes:
                     filtered_states = []
                     filtered_trips = []
@@ -2074,19 +2080,22 @@ with tf.Session(config=gpu_config) as sess:
                         filtered_advantages = np.asarray(filtered_advantages)[downsampled_indices]
                         filtered_actions = np.asarray(filtered_actions)[downsampled_indices]
                     loss = policy_estimator.update(filtered_states, filtered_trips, filtered_advantages, filtered_actions, sess)
-                    print('loss={}'.format(loss))
+                    print('loss={}'.format(loss), file=f)
+                    f.flush()
             else:
                 #TODO: filter and reshape
                 action_labels = np.reshape(np.asarray(action_labels), (-1, config.num_actions))
                 loss, accuracy = policy_estimator.train(states, trips, action_labels, sess)
-                print('loss={}, accuracy={}'.format(loss, accuracy))
+                print('loss={}, accuracy={}'.format(loss, accuracy), file=f)
         timers_epoch = [inference_time, gpu_inference_time, env_act_time, (datetime.datetime.now() - start_timer).total_seconds()]
         timers_epoch.extend(action_timers)
         timers.append(timers_epoch)
         if config.model_to_restore is None and index_sample > 0 and index_sample % 500 == 0:
             save_path = saver.save(sess, "./rollout_model_{}_{}_{}.ckpt".format(index_sample, config.num_history_action_use, config.max_rollout_steps))
-            print("Model saved in path: %s" % save_path)
+            print("Model saved in path: %s" % save_path, file=f)
+            f.flush()
 
     # save_path = saver.save(sess, "./rollout_model.ckpt")
     # print("Model saved in path: %s" % save_path)
-    print('solving time = {}'.format(datetime.datetime.now() - start))
+    print('solving time = {}'.format(datetime.datetime.now() - start), file=f)
+    f.close()
