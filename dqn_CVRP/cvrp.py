@@ -5,7 +5,7 @@ import math
 
 problem_seed = 0
 # Global seed
-num_train_points = 100
+num_train_points = 20
 # Global 训练样本点数
 
 
@@ -141,7 +141,8 @@ class Solution:
                                             [i-1]][self.path[path_num][i]]
         return dist
 
-
-problem = generate_problem()
-solution = construct_solution(problem)
-print(solution.get_cost(problem))
+    def show_path(self):
+        for path_num in range(len(self.path)):
+            for i in range(len(self.path[path_num])-1):
+                print(self.path[path_num][i], end="->")
+            print(0)

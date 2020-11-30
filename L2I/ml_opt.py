@@ -894,7 +894,7 @@ def improve_solution_by_action(step, problem, solution, action):
                     problem.mark_no_improvement(step, action, path_index_first, path_index_second)
     return improved_solution, all_delta
 
-
+'''
 def dense_to_one_hot(labels_dense, num_training_points):
   """Convert class labels from scalars to one-hot vectors."""
   num_labels = labels_dense.shape[0]
@@ -902,7 +902,7 @@ def dense_to_one_hot(labels_dense, num_training_points):
   labels_one_hot = np.zeros((num_labels, config.num_training_points))
   labels_one_hot.flat[index_offset + labels_dense.ravel()] = 1
   return labels_one_hot
-
+'''
 
 def reshape_input(input, x, y, z):
     return np.reshape(input, (x, y, z))
@@ -911,7 +911,7 @@ def reshape_input(input, x, y, z):
 is_training = tf.placeholder(tf.bool)
 keep_prob = tf.placeholder(tf.float32)
 
-
+'''
 def build_multi_operator_model(raw_input):
     input_sequence = tf.unstack(raw_input, config.num_training_points, 1)
     lstm_fw_cell = rnn.BasicLSTMCell(config.num_lstm_units, forget_bias=1.0)
@@ -928,7 +928,7 @@ def build_multi_operator_model(raw_input):
 
     output_layer = tf.contrib.layers.fully_connected(layer_2, config.num_training_points, activation_fn=None)
     return output_layer
-
+'''
 
 def get_random_capacities(n):
     capacities = [0] * n
