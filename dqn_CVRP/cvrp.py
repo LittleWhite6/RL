@@ -3,10 +3,7 @@ import random
 import math
 
 
-problem_seed = 0
-# Global seed
-num_train_points = 20
-# Global 训练样本点数
+from hyper_parameter import *
 
 
 depot_positionings = {0: 'R', 1: 'E', 2: 'C'}

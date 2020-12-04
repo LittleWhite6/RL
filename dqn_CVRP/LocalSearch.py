@@ -2,13 +2,14 @@ from cvrp import *
 
 import copy
 
-EPSILON = 1e-6
-
 
 def calculate_travel_node_dist(problem, node_i, node_j):
     return problem.dist_matrix[node_i][node_j]
 
+
 # intra
+
+
 # operator1: 2_opt
 def intra_two_Opt(problem, path):
     n = len(path) - 1
@@ -82,6 +83,8 @@ def intra_Relocate(problem, path):
 
 
 # inter (multi-segment 未测试)
+
+
 def get_path_load(problem, path):
     n = len(path) - 1
     # 不包含最后的depot
@@ -234,35 +237,34 @@ def Cyclic_exchange(problem, solution):
 
 
 # Perturbation operators:
+
+
 def random_construct(problem, solution):
     node_list = [i+1 for i in range(num_train_points)]
     #标记已服务的节点
     for i in range(len(solution.path)):
         for j in range(len(solution.path[i])):
-            node_list[solution.path[i][j]] = -1
+            node_list[solution.path[i][j] - 1] = -1
     #去除solution中已经存在的节点
-    for i in range(len(node_list)):
-        if node_list[i] == -1:
-            node_list.pop(i)
-            i -= 1
+    while node_list.__contains__(-1):
+        node_list.remove(-1)
     while node_list:
         load = problem.capacities[0]
-        path = []
-        while load > 0:
+        path = [0]
+        while load > 0 and node_list:
             node = random.choice(node_list)
             if load > problem.capacities[node]:
                 path.append(node)
-                #delete node in node_list
-                for i in range(len(node_list)):
-                    if node == node_list[i]:
-                        node_list.pop(i)
-                        break
+                node_list.remove(node)
                 load -= problem.capacities[node]
             else:
                 #如果检查到超负荷就直接构建新的路径
                 path.append(0)
                 solution.path.append(path)
                 break
+        if not node_list:
+            path.append(0)
+            solution.path.append(path)
     return solution
                 
 
@@ -280,18 +282,13 @@ def Random_permute(problem, solution):
     solution = random_construct(problem, solution)
 
 
-# test feasibility code
-problem = generate_problem()
-solution = construct_solution(problem)
-print(solution.get_cost(problem))
-
-for i in range(len(solution.path)):
-    solution.path_load.append(get_path_load(problem, solution.path[i]))
-
-
-for i in range(10):
-    solution.path[0], solution.path[1], label = Relocate(problem, solution.path[0], solution.path[1], 1)
-    print(solution.get_cost(problem))
-    Random_permute(problem, solution)
-
-print(solution.get_cost(problem))
+'''
+# operator10: Random-exchang
+def Random_exchange(problem, solution):
+    min_len = float("inf")
+    for i in range(len(solution.path)):
+        curr_len = len(solution.path[i])
+        if curr_len < min_len:
+            min_len = curr_len
+    m = random.randint(1, min_len)
+'''

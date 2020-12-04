@@ -911,7 +911,7 @@ def reshape_input(input, x, y, z):
 is_training = tf.placeholder(tf.bool)
 keep_prob = tf.placeholder(tf.float32)
 
-'''
+
 def build_multi_operator_model(raw_input):
     input_sequence = tf.unstack(raw_input, config.num_training_points, 1)
     lstm_fw_cell = rnn.BasicLSTMCell(config.num_lstm_units, forget_bias=1.0)
@@ -928,7 +928,7 @@ def build_multi_operator_model(raw_input):
 
     output_layer = tf.contrib.layers.fully_connected(layer_2, config.num_training_points, activation_fn=None)
     return output_layer
-'''
+
 
 def get_random_capacities(n):
     capacities = [0] * n
