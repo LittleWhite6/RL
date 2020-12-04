@@ -22,8 +22,10 @@ def calculate_distance(point0, point1):
 
 def generate_problem():
     global problem_seed
-    depot_positioning = depot_positionings.get(random.randint(0, 2))
-    customer_positioning = customer_positionings.get(random.randint(0, 2))
+    #depot_positioning = depot_positionings.get(random.randint(0, 2))
+    depot_positioning = 'R'
+    #customer_positioning = customer_positionings.get(random.randint(0, 2))
+    customer_positioning = 'R'
     np.random.seed(problem_seed)
     random.seed(problem_seed)
     problem_seed += 1
@@ -81,19 +83,16 @@ def generate_problem():
     return init_problem
 
 
-def check_capacity(load, node_capacity):
-    return (load-node_capacity) > 0
-
-
 def find_minimal_index(problem, nodes_exist, load, last_node):
-    dist = float("inf")
+    min_dist = float("inf")
     index = 0
     # 初始距离设为无穷大
-    for i in range(1, len(problem.dist_matrix[last_node])):
-        if problem.dist_matrix[last_node][i] < dist:
-            if nodes_exist[i-1] == 0:
-                if check_capacity(load, problem.capacities[i]):
-                    index = i
+    for i in range(1, num_train_points + 1):
+        if problem.dist_matrix[last_node][i] < min_dist \
+        and nodes_exist[i-1] == 0 \
+        and load - problem.capacities[i] > 0:
+            min_dist = problem.dist_matrix[last_node][i]
+            index = i
     return index
 
 
@@ -106,7 +105,8 @@ def construct_solution(problem):
         while load > 0:
             next_node = find_minimal_index(
                 problem, nodes_exist, load, path[-1])
-            nodes_exist[next_node-1] = 1
+            if next_node != 0:
+                nodes_exist[next_node - 1] = 1
             path.append(next_node)
             load -= problem.capacities[next_node]
         paths.append(path)
@@ -132,13 +132,13 @@ class Solution:
     def __init__(self, paths):
         self.path = paths
         self.cost = 0
-
+        self.path_load = [] #测试算子用列表
+            
     def get_cost(self, problem):
         dist = 0
         for path_num in range(len(self.path)):
             for i in range(1, len(self.path[path_num])):
-                dist += problem.dist_matrix[self.path[path_num]
-                                            [i-1]][self.path[path_num][i]]
+                dist += problem.dist_matrix[self.path[path_num][i-1]][self.path[path_num][i]]
         return dist
 
     def show_path(self):
