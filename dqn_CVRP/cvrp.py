@@ -107,7 +107,7 @@ def construct_solution(problem):
             path.append(next_node)
             load -= problem.capacities[next_node]
         paths.append(path)
-    init_solution = Solution(paths)
+    init_solution = Solution(problem, paths)
     return init_solution
 
 
@@ -126,11 +126,22 @@ class Problem:
 
 
 class Solution:
-    def __init__(self, paths):
+    def __init__(self, problem, paths):
         self.path = paths
-        self.cost = 0
+        self.cost = self.get_cost(problem)  #init_cost = 0?
         self.path_load = [] #测试算子用列表
-            
+
+
+    #获得车辆在节点i处的负载
+    def get_vehicle_load(self, problem, path, node):
+        load = 0
+        if node == 0:
+            return problem.capacities[0]
+        for i in range(1, len(path)):
+            load += problem.capacities[path[i]]
+
+
+    #获得解决方案的cost
     def get_cost(self, problem):
         dist = 0
         for path_num in range(len(self.path)):
@@ -138,6 +149,8 @@ class Solution:
                 dist += problem.dist_matrix[self.path[path_num][i-1]][self.path[path_num][i]]
         return dist
 
+
+    #展示解决方案的路径
     def show_path(self):
         for path_num in range(len(self.path)):
             for i in range(len(self.path[path_num])-1):

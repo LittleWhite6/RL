@@ -13,7 +13,7 @@ def calculate_travel_node_dist(problem, node_i, node_j):
 # operator1: 2_opt
 def intra_two_Opt(problem, path):
     n = len(path) - 1
-    max_delta = EPSILON
+    max_delta = 1e-6
     label = None
     for i in range(1, n - 1):
         for j in range(i + 1, n):
@@ -38,7 +38,7 @@ def intra_two_Opt(problem, path):
 # operator2: Symmetric-exchange
 def intra_Symmetric_exchange(problem, path):
     n = len(path) - 1
-    max_delta = EPSILON
+    max_delta = 1e-6
     label = None
     for i in range(1, n - 1):
         for j in range(i + 1, n):
@@ -64,7 +64,7 @@ def intra_Symmetric_exchange(problem, path):
 # operator3: Relocate
 def intra_Relocate(problem, path):
     n = len(path) - 1
-    max_delta = EPSILON
+    max_delta = 1e-6
     label = None
     for i in range(1, n):
         for j in range(n):
@@ -94,11 +94,11 @@ def get_path_load(problem, path):
     return path_load
 
 
-# operator3: Cross
+# operator4: Cross
 def inter_Cross(problem, path_first, path_second):
     n_first = len(path_first) - 1
     n_second = len(path_second) - 1
-    max_delta = EPSILON
+    max_delta = 1e-6
     label = None
     load_first = get_path_load(problem, path_first)
     load_second = get_path_load(problem, path_second)
@@ -128,7 +128,7 @@ def inter_Cross(problem, path_first, path_second):
     return path_first, path_second, label
 
 
-# operator4: Reverse-cross
+# operator5: Reverse-cross
 def inter_Reverse_cross(problem, path_first, path_second):
     #Reverse one of two route
     reverse_index = random.randint(0, 1)
@@ -144,11 +144,11 @@ def inter_Reverse_cross(problem, path_first, path_second):
     return inter_Cross(problem, path_first, path_second)
 
 
-# operator5: Symmetric-exchange(segments = [m, n], definition before passing, m 代表第一个切片长度，n代表第二个切片长度, 0,1,2 = len: 1,2,3)
+# operator6: Symmetric-exchange(segments = [m, n], definition before passing, m 代表第一个切片长度，n代表第二个切片长度, 0,1,2 = len: 1,2,3)
 def Symmetric_exchange(problem, path_first, path_second, segments):
     n_first = len(path_first) - 1
     n_second = len(path_second) - 1
-    max_delta = EPSILON
+    max_delta = 1e-6
     label = None
     load_first = get_path_load(problem, path_first)
     load_second = get_path_load(problem, path_second)
@@ -185,16 +185,16 @@ def Symmetric_exchange(problem, path_first, path_second, segments):
     return path_first, path_second, label
 
             
-# operator6: Asymmetric-exchange
+# operator7: Asymmetric-exchange
 def Asymmetric_exchange(problem, path_first, path_second, segments):
     return Symmetric_exchange(problem, path_first, path_second, segments)
 
 
-# operator7: Relocate(segments = m: 1, 2, 3)
+# operator8: Relocate(segments = m: 1, 2, 3)
 def Relocate(problem, path_first, path_second, segment):
     n_first = len(path_first) - 1
     n_second = len(path_second) - 1
-    max_delta = EPSILON
+    max_delta = 1e-6
     label = None
     load_first = get_path_load(problem, path_first)
     load_second = get_path_load(problem, path_second)
@@ -227,7 +227,7 @@ def Relocate(problem, path_first, path_second, segment):
     return path_first, path_second, label
 
 
-# operator8: Cyclic_exchange(每次循环交换一个顾客)
+# operator9: Cyclic_exchange(每次循环交换一个顾客)
 def Cyclic_exchange(problem, solution):
     path_num = len(solution.path)
     for i in range(path_num - 1):
@@ -268,7 +268,7 @@ def random_construct(problem, solution):
     return solution
                 
 
-# operator9: Random-permute (先全部删除路径再随机构建)
+# operator10: Random-permute (先全部删除路径再随机构建)
 def Random_permute(problem, solution):
     n = len(solution.path)
     #每次选几个路径，当前为随机
@@ -280,10 +280,11 @@ def Random_permute(problem, solution):
     for i in range(len(destory_paths)):
         solution.path.pop(destory_paths[i])
     solution = random_construct(problem, solution)
+    return solution
 
 
 '''
-# operator10: Random-exchang
+# operator11: Random-exchang
 def Random_exchange(problem, solution):
     min_len = float("inf")
     for i in range(len(solution.path)):

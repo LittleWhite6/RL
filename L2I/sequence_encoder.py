@@ -12,6 +12,7 @@ distr = tf.contrib.distributions
 
 # Embed input sequence [batch_size, seq_length, from_] -> [batch_size, seq_length, to_]
 def embed_seq(input_seq, from_, to_, is_training, BN=True, initializer=tf.contrib.layers.xavier_initializer()):
+	#from_: 11 	to_:64
 	with tf.variable_scope("embedding"):  # embed + BN input set
 		W_embed = tf.get_variable("weights", [1, from_, to_], initializer=initializer)
 		embedded_input = tf.nn.conv1d(input_seq, W_embed, 1, "VALID", name="embedded_input")

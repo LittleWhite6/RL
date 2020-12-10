@@ -45,10 +45,10 @@ def get_config(args=None):
     parser.add_argument('--batch_size', type=int, default=1000, help='batch size')
     parser.add_argument('--max_rollout_steps', type=int, default=20000, help="maximum rollout steps")
     parser.add_argument('--max_rollout_seconds', type=int, default=1000, help="maximum rollout time in seconds")
-    parser.add_argument('--use_cyclic_rollout', type=str2bool, nargs='?', const=True, default=True, help="use cyclic rollout")  #default=True
-    parser.add_argument('--use_random_rollout',type=str2bool, nargs='?', const=True, default=True, help="use random rollout")  #default=True
+    parser.add_argument('--use_cyclic_rollout', type=str2bool, nargs='?', const=True, default=False, help="use cyclic rollout")  #default=True
+    parser.add_argument('--use_random_rollout',type=str2bool, nargs='?', const=True, default=False, help="use random rollout")  #default=True
     parser.add_argument('--detect_negative_cycle', type=str2bool, nargs='?', const=True, default=False, help="")
-    parser.add_argument('--use_rl_loss', type=str2bool, nargs='?', const=True, default=True, help="")  #default=True
+    parser.add_argument('--use_rl_loss', type=str2bool, nargs='?', const=True, default=None, help="")  #default=True
     parser.add_argument('--use_attention_embedding', type=str2bool, nargs='?', const=True, default=True, help="")
     parser.add_argument('--epsilon_greedy', type=float, default=0.05, help="")
     parser.add_argument('--sample_actions_in_rollout', type=str2bool, nargs='?', const=True, default=True, help="")    #default=True
@@ -1750,8 +1750,7 @@ f = open("results.txt", "a+")
 with tf.Session(config=gpu_config) as sess:
     policy_estimator = PolicyEstimator()    #策略评估类实例
     initialize_uninitialized(sess)  #初始化全部变量
-    print(sess.run(tf.report_uninitialized_variables()), file=f)
-    f.flush()
+    print(sess.run(tf.report_uninitialized_variables()))
     variables_names = [v.name for v in tf.trainable_variables()]
     values = sess.run(variables_names)
     for k, v in zip(variables_names, values):
