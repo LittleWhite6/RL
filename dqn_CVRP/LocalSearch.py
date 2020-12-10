@@ -102,29 +102,27 @@ def inter_Cross(problem, path_first, path_second):
     label = None
     load_first = get_path_load(problem, path_first)
     load_second = get_path_load(problem, path_second)
-    start = 1
-    for first in range(1, n_first):
-        unserved_customer_first = load_first[n_first - 2] - load_first[first - 1]
+    start = 0
+
+    for first in range(n_first):
+        unserved_customer_first = load_first[n_first - 1] - load_first[first]
         for second in range(start, n_second):
-            unserved_customer_second = load_second[n_second - 2] - load_second[second - 1]
             # 检查第二个车辆服务第一个路径剩余的节点是否会超载
-            if unserved_customer_first + load_second[second - 1] > problem.capacities[0]:
+            if unserved_customer_first + load_second[second] > problem.capacities[0]:
                 break
-            elif unserved_customer_second + load_first[first - 1] > problem.capacities[0]:
-                start = second
+            if load_first[first] + (load_second[n_second - 1] - load_second[second]) > problem.capacities[0]:
+                start = second + 1
                 continue
-            before = calculate_travel_node_dist(problem, path_first[first - 1], path_first[first]) + calculate_travel_node_dist(
-                problem, path_second[second - 1], path_second[second])
-            after = calculate_travel_node_dist(problem, path_first[first - 1], path_second[second]) + calculate_travel_node_dist(
-                problem, path_second[second - 1], path_first[first])
+            before = calculate_travel_node_dist(problem, path_first[first], path_first[first + 1]) + calculate_travel_node_dist(
+                problem, path_second[second], path_second[second + 1])
+            after = calculate_travel_node_dist(problem, path_first[first], path_second[second + 1]) + calculate_travel_node_dist(
+                problem, path_second[second], path_first[first + 1])
             delta = before - after
             if delta > max_delta:
                 max_delta = delta
                 label = first, second
     if label != None:
-        path_temp = path_first[:]
-        path_first = path_temp[:label[0]] + path_second[label[1]:]
-        path_second = path_second[:label[1]] + path_temp[label[0]:]
+        return path_first[:(label[0] + 1)] + path_second[(label[1] + 1):], path_second[:(label[1] + 1)] + path_first[(label[0] + 1):], label
     return path_first, path_second, label
 
 
@@ -179,9 +177,9 @@ def Symmetric_exchange(problem, path_first, path_second, segments):
                     max_delta = delta
                     label = head_first, tail_first, head_second, tail_second
     if label != None:
-        path_temp = path_first[:]
-        path_first = path_first[:label[0]] + path_second[label[2]:label[3]] + path_first[label[1] + 1:]
-        path_second = path_second[:label[2]] + path_temp[label[0]:label[1]] + path_second[label[3] + 1:]
+        path_temp = copy.deepcopy(path_first)
+        path_first = path_first[:label[0]] + path_second[label[2]:label[3]+1] + path_first[label[1] + 1:]
+        path_second = path_second[:label[2]] + path_temp[label[0]:label[1]+1] + path_second[label[3] + 1:]
     return path_first, path_second, label
 
             
@@ -244,7 +242,7 @@ def random_construct(problem, solution):
     node_list = [i+1 for i in range(num_train_points)]
     #标记已服务的节点
     for i in range(len(solution.path)):
-        for j in range(len(solution.path[i])):
+        for j in range(1, len(solution.path[i]) - 1):
             node_list[solution.path[i][j] - 1] = -1
     #去除solution中已经存在的节点
     while node_list.__contains__(-1):

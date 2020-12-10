@@ -51,14 +51,14 @@ def env_step(problem, solution, action):
         elif action == 4:
             next_solution.path[path_first], next_solution.path[path_second], label = inter_Reverse_cross(problem, solution.path[path_first], solution.path[path_second])
         elif action == 5:
-            next_solution.path[path_first], next_solution.path[path_second], label = Symmetric_exchange(problem, solution.path[path_first], solution.path[path_second], [random.randint(0, 2), random.randint(0, 2)])
+            segment = random.randint(1, 3)
+            next_solution.path[path_first], next_solution.path[path_second], label = Symmetric_exchange(problem, solution.path[path_first], solution.path[path_second], [segment, segment])
         elif action == 6: 
-            next_solution.path[path_first], next_solution.path[path_second], label = Asymmetric_exchange(problem, solution.path[path_first], solution.path[path_second], [random.randint(0, 2), random.randint(0, 2)])
+            next_solution.path[path_first], next_solution.path[path_second], label = Asymmetric_exchange(problem, solution.path[path_first], solution.path[path_second], [random.randint(1, 3), random.randint(1, 3)])
         elif action ==7:
             next_solution.path[path_first], next_solution.path[path_second], label = Relocate(problem, solution.path[path_first], solution.path[path_second], random.randint(1, 3))
         elif action ==8:
-            #next_solution, label == Cyclic_exchange(problem, solution)
-            label = None
+            next_solution, label = Cyclic_exchange(problem, solution)
         #此次优化成功
         if label:
             paths_inter_ls[path_first] += 1
@@ -66,7 +66,7 @@ def env_step(problem, solution, action):
         else:
             paths_inter_ls.pop(path_first)
             paths_inter_ls.pop(path_second)
-    else:
+    elif action == 9:
         next_solution = Random_permute(problem, solution)
         label = None
     return next_solution, label

@@ -143,7 +143,7 @@ class Solution:
 
     #获得解决方案的cost
     def get_cost(self, problem):
-        dist = 0
+        dist = 0.0
         for path_num in range(len(self.path)):
             for i in range(1, len(self.path[path_num])):
                 dist += problem.dist_matrix[self.path[path_num][i-1]][self.path[path_num][i]]
