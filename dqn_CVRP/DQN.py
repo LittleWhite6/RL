@@ -148,7 +148,7 @@ class Deep_Q_network:
                 self.q_next = tf.matmul(l1, w2) + b2
 
 
-    def __init__(self, n_actions, n_features, learning_rate=learning_rate, reward_decay=discount_factor, e_greedy=EPSILON, replace_target_iter=300, memory_size=2000, batch_size=32, e_greedy_increment=None, output_graph=False):
+    def __init__(self, n_actions, n_features, learning_rate=learning_rate, reward_decay=discount_factor, e_greedy=EPSILON, replace_target_iter=300, memory_size=2000, batch_size=1, e_greedy_increment=None, output_graph=False):
         self.n_actions = n_actions
         self.n_features = n_features
         self.lr = learning_rate
@@ -220,7 +220,7 @@ class Deep_Q_network:
             self.sess.run(self.replace_target_op)
             print('\ntarget_params_replaced\n')
         
-        #从memory中随机抽取batch_size这么多记忆
+        #从memory中随机抽取batch_size=32这么多记忆
         if self.memory_counter > self.memory_size:
             sample_index = np.random.choice(self.memory_size, size=self.batch_size)
         else:
@@ -228,19 +228,7 @@ class Deep_Q_network:
         batch_memory = self.memory[sample_index, :]
         
         #获取q_next(target_net产生了q)和q_eval(eval_net产生的q)
-        q_next, q_eval = self.sess.run([self.q_next, self.q_eval], feed_dict={self.s_:batch_memory[:, -self.n_features:], self.s: batch_memory[:, :self.n_features]})
-
-        ''' 
-        q_next, q_eval包含所有action的值
-        将有用到的action误差值反向传递回去作为更新凭据，其他的action值全变成0
-        e.g. q_eval=[-1,0,0]表示选用了action0，而action0带来的Q(s,a0)=-1,所以其他的Q(s,a1)=Q(s,a2)=0
-             q_target=[1,0,0]表示这个记忆中的r+gamma*maxQ(s_)=1,而且不管在s_上我们取了哪个action.
-        我们都需要对应上q_eval中的action位置，所以就将1放在action0的位置.
-        
-        下面是为了达到上面说的目的，将q_eval全部赋值给q_target，这时q_target-q_eval全为0
-        再根据batch_memory当中的action这个column来给q_target中的对应的memory-action位置来修改赋值
-        使新的赋值为reward+gamma*maxQ(s_),这样q_target-q_eval就可以变成我们所需的样子
-        '''
+        q_next, q_eval = self.sess.run([self.q_next, self.q_eval], feed_dict={self.s_: batch_memory[:, -self.n_features:], self.s: batch_memory[:, :self.n_features]})
 
         q_target = q_eval.copy()
         batch_index = np.arange(self.batch_size, dtype=np.int32)
@@ -248,9 +236,10 @@ class Deep_Q_network:
         reward = batch_memory[:, self.n_features + 1]
 
         q_target[batch_index, eval_act_index] = reward + self.gamma * np.max(q_next, axis=1)
+        q_target = np.reshape(q_target, (10))
 
         _, self.cost = self.sess.run([self._train_op, self.loss], feed_dict={self.s: batch_memory[:, :self.n_features], self.q_target: q_target})
-        self.cost_history(self.cost)    #记录cost误差
+        #self.cost_history(self.cost)    #记录cost误差
 
         #逐渐增加epsilon,降低行为的随机性
         self.epsilon = self.epsilon + self.epsilon_increment if self.epsilon < self.epsilon_max else self.epsilon_max

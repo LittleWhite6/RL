@@ -47,17 +47,18 @@ def env_step(problem, solution, action):
         path_first, path_second = select_2_paths(paths_inter_ls)
         #生成inter优化的路径
         if action == 3:
-            next_solution.path[path_first], solution.path[path_second], label = inter_Cross(problem, solution.path[path_first], solution.path[path_second])
+            next_solution.path[path_first], next_solution.path[path_second], label = inter_Cross(problem, solution.path[path_first], solution.path[path_second])
         elif action == 4:
-            next_solution.path[path_first], solution.path[path_second], label = inter_Reverse_cross(problem, solution.path[path_first], solution.path[path_second])
+            next_solution.path[path_first], next_solution.path[path_second], label = inter_Reverse_cross(problem, solution.path[path_first], solution.path[path_second])
         elif action == 5:
-            next_solution.path[path_first], solution.path[path_second], label = Symmetric_exchange(problem, solution.path[path_first], solution.path[path_second], [random.randint(0, 2), random.randint(0, 2)])
+            next_solution.path[path_first], next_solution.path[path_second], label = Symmetric_exchange(problem, solution.path[path_first], solution.path[path_second], [random.randint(0, 2), random.randint(0, 2)])
         elif action == 6: 
-            next_solution.path[path_first], solution.path[path_second], label = Asymmetric_exchange(problem, solution.path[path_first], solution.path[path_second], [random.randint(0, 2), random.randint(0, 2)])
+            next_solution.path[path_first], next_solution.path[path_second], label = Asymmetric_exchange(problem, solution.path[path_first], solution.path[path_second], [random.randint(0, 2), random.randint(0, 2)])
         elif action ==7:
-            next_solution.path[path_first], solution.path[path_second], label = Relocate(problem, solution.path[path_first], solution.path[path_second], random.randint(1, 3))
+            next_solution.path[path_first], next_solution.path[path_second], label = Relocate(problem, solution.path[path_first], solution.path[path_second], random.randint(1, 3))
         elif action ==8:
-            next_solution == Cyclic_exchange(problem, solution)
+            #next_solution, label == Cyclic_exchange(problem, solution)
+            label = None
         #此次优化成功
         if label:
             paths_inter_ls[path_first] += 1

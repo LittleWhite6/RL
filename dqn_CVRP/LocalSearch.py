@@ -232,8 +232,9 @@ def Cyclic_exchange(problem, solution):
     path_num = len(solution.path)
     for i in range(path_num - 1):
         solution.path[i], solution.path[i + 1], label = Relocate(problem, solution.path[i], solution.path[i + 1], 1)
-    solution.path[path_num], solution.path[1], label = Relocate(problem, solution.path[path_num], solution.path[1], 1)
-    return solution
+    path_num -= 1
+    solution.path[path_num], solution.path[0], label = Relocate(problem, solution.path[path_num], solution.path[0], 1)
+    return solution, label
 
 
 # Perturbation operators:
