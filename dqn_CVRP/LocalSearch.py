@@ -219,9 +219,9 @@ def Relocate(problem, path_first, path_second, segment):
             path_first.pop(label[1])
             path_second.insert(label[3] + 1, node)
         else:
-            segment = path_first[label[1]:label[2]]
-            path_first = path_first[:label[1]] + path_first[label[2]:]
-            path_second = path_second[:label[3] + 1] + segment + path_second[label[3] + 2:]
+            segment = path_first[label[1]:label[2] + 1]
+            path_first = path_first[:label[1]] + path_first[label[2] + 1:]
+            path_second = path_second[:label[3] + 1] + segment + path_second[label[3] + 1:]
     return path_first, path_second, label
 
 
