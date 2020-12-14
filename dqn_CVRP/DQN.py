@@ -88,8 +88,8 @@ def encode_seq(input_seq, input_dim, num_heads, num_neurons, is_training, dropou
 # 嵌入网络，将特征值嵌入到(64)的行向量中
 def embedding_net(features):
     with tf.variable_scope('embedding_net'):
-        x = embed_seq(inputs=features, from_=feature_size, to_=64, is_training=False, BN=True, initializer=tf.contrib.layers.xavier_initializer())
-        layer_attention = encode_seq(input_seq=x, input_dim=64, num_heads=8, num_neurons=64, is_training=False, dropout_rate=0.1)
+        x = embed_seq(inputs=features, from_=feature_size, to_=64, is_training=True, BN=True, initializer=tf.contrib.layers.xavier_initializer())
+        layer_attention = encode_seq(input_seq=x, input_dim=64, num_heads=8, num_neurons=64, is_training=True, dropout_rate=0.1)
         layer_2 = tf.reduce_sum(layer_attention, axis=1)
     return layer_2
 
@@ -105,7 +105,7 @@ class Deep_Q_network:
     #建立神经网络
     def _build_net(self):
         # 创建eval神经网络, 及时提升参数
-        self.s = tf.placeholder(tf.float32, [1, self.n_features], name='s')    #接受observation: solution_features + action_num + reward + delta_min + delta
+        self.s = tf.placeholder(tf.float32, [1, self.n_features], name='s')    #跑通代码的时候为1，接受observation: solution_features + action_num + reward + delta_min + delta
         self.q_target = tf.placeholder(tf.float32, [self.n_actions], name='Q_target')   #用来接受q_target的值，通过计算得到
         with tf.variable_scope('eval_net'):
             # c_name(collections_names)是在更新target_net参数时会用到
@@ -148,7 +148,7 @@ class Deep_Q_network:
                 self.q_next = tf.matmul(l1, w2) + b2
 
 
-    def __init__(self, n_actions, n_features, learning_rate=learning_rate, reward_decay=discount_factor, e_greedy=EPSILON, replace_target_iter=300, memory_size=2000, batch_size=1, e_greedy_increment=None, output_graph=False):
+    def __init__(self, n_actions, n_features, learning_rate=learning_rate, reward_decay=discount_factor, e_greedy=EPSILON, replace_target_iter=300, memory_size=2000, batch_size=32, e_greedy_increment=None, output_graph=False):
         self.n_actions = n_actions
         self.n_features = n_features
         self.lr = learning_rate
@@ -218,7 +218,7 @@ class Deep_Q_network:
         #检查是否替换target_net参数
         if self.learn_step_counter % self.replace_target_iter == 0:
             self.sess.run(self.replace_target_op)
-            print('\ntarget_params_replaced\n')
+            #print('\ntarget_params_replaced\n')
         
         #从memory中随机抽取batch_size=32这么多记忆
         if self.memory_counter > self.memory_size:
@@ -226,16 +226,20 @@ class Deep_Q_network:
         else:
             sample_index = np.random.choice(self.memory_counter, size=self.batch_size)
         batch_memory = self.memory[sample_index, :]
-        
+
+        # 新增修改batch_memory = shape(32, 138) => (1, 138)
+        batch_memory = np.mean(batch_memory, axis=0)
+        batch_memory = np.reshape(batch_memory, newshape=(1, 138))
+
         #获取q_next(target_net产生了q)和q_eval(eval_net产生的q)
         q_next, q_eval = self.sess.run([self.q_next, self.q_eval], feed_dict={self.s_: batch_memory[:, -self.n_features:], self.s: batch_memory[:, :self.n_features]})
 
         q_target = q_eval.copy()
-        batch_index = np.arange(self.batch_size, dtype=np.int32)
+        #batch_index = np.arange(self.batch_size, dtype=np.int32)
         eval_act_index = batch_memory[:, self.n_features].astype(int)
         reward = batch_memory[:, self.n_features + 1]
 
-        q_target[batch_index, eval_act_index] = reward + self.gamma * np.max(q_next, axis=1)
+        q_target[0, eval_act_index] = reward + self.gamma * np.max(q_next, axis=1)
         q_target = np.reshape(q_target, (10))
 
         _, self.cost = self.sess.run([self._train_op, self.loss], feed_dict={self.s: batch_memory[:, :self.n_features], self.q_target: q_target})

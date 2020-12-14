@@ -93,22 +93,77 @@ def find_minimal_index(problem, nodes_exist, load, last_node):
     return index
 
 
-def construct_solution(problem):
-    nodes_exist = np.zeros(num_train_points)
-    paths = []
-    while nodes_exist.__contains__(0):
-        path = [0]
+def random_construct(problem, solution):
+    node_list = [i+1 for i in range(num_train_points)]
+    #标记已服务的节点
+    for i in range(len(solution.path)):
+        for j in range(1, len(solution.path[i]) - 1):
+            node_list[solution.path[i][j] - 1] = -1
+    #去除solution中已经存在的节点
+    while node_list.__contains__(-1):
+        node_list.remove(-1)
+    while node_list:
         load = problem.capacities[0]
-        while load > 0:
-            next_node = find_minimal_index(
-                problem, nodes_exist, load, path[-1])
-            if next_node != 0:
-                nodes_exist[next_node - 1] = 1
-            path.append(next_node)
-            load -= problem.capacities[next_node]
-        paths.append(path)
-    init_solution = Solution(problem, paths)
-    return init_solution
+        path = [0]
+        while load > 0 and node_list:
+            node = random.choice(node_list)
+            if load > problem.capacities[node]:
+                path.append(node)
+                node_list.remove(node)
+                load -= problem.capacities[node]
+            else:
+                #如果检查到超负荷就直接构建新的路径
+                path.append(0)
+                solution.path.append(path)
+                break
+        if not node_list:
+            path.append(0)
+            solution.path.append(path)
+    return solution
+
+
+def construct_solution(problem, default_random):
+    #random construct
+    if default_random:
+        node_list = [i+1 for i in range(num_train_points)]
+        paths = []
+        while node_list:
+            load = problem.capacities[0]
+            path = [0]
+            while load > 0 and node_list:
+                node = random.choice(node_list)
+                if load > problem.capacities[node]:
+                    path.append(node)
+                    node_list.remove(node)
+                    load -= problem.capacities[node]
+                else:
+                    #如果检查到超负荷就直接构建新的路径
+                    path.append(0)
+                    paths.append(path)
+                    break
+            if not node_list:
+                path.append(0)
+                paths.append(path)
+        init_solution = Solution(problem, paths)
+        return init_solution
+
+    #min_dist heuristic construct
+    else:
+        nodes_exist = np.zeros(num_train_points)
+        paths = []
+        while nodes_exist.__contains__(0):
+            path = [0]
+            load = problem.capacities[0]
+            while load > 0:
+                next_node = find_minimal_index(
+                    problem, nodes_exist, load, path[-1])
+                if next_node != 0:
+                    nodes_exist[next_node - 1] = 1
+                path.append(next_node)
+                load -= problem.capacities[next_node]
+            paths.append(path)
+        init_solution = Solution(problem, paths)
+        return init_solution
 
 
 class Problem:

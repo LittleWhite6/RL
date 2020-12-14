@@ -16,9 +16,10 @@ def select_2_paths(path_non_optimal):
     return paths[0], paths[1]
 
 
-def env_step(problem, solution, action):
+def env_step(problem, solution, action, no_change):
     # 随机选择优化路径
     next_solution = copy.deepcopy(solution)
+    label = None
     if action in range(0, 3):
         #生成待intra优化的路径
         paths_intra_ls = {}
@@ -66,7 +67,9 @@ def env_step(problem, solution, action):
         else:
             paths_inter_ls.pop(path_first)
             paths_inter_ls.pop(path_second)
-    elif action == 9:
+    elif action == 9 and no_change == 20:
         next_solution = Random_permute(problem, solution)
-        label = None
+    else:
+        return next_solution, label
+    next_solution.cost = next_solution.get_cost(problem)
     return next_solution, label

@@ -3,6 +3,7 @@ from ENV import *
 
 import datetime
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 action_probs = [0] * action_num
 action_times = [0] * action_num
@@ -88,7 +89,7 @@ def validate_solution(solution, problem):
         return False
     return True
 
-f = open("results.txt", "a+")
+
 with tf.Session() as sess:
 
     start = datetime.datetime.now()
@@ -96,18 +97,11 @@ with tf.Session() as sess:
     solution_features = tf.placeholder(tf.float32, [num_train_points,feature_size], "solution_features")
     embed_features = embedding_net(solution_features)
     initialize_uninitialized(sess)
-    best_solution = None
-    best_problem = None
-    global_optimal = 0
-    #all_best_solution = []
 
     for episode in range(max_episodes):
         problem = generate_problem()
-        solution = construct_solution(problem)
-        if best_solution == None:
-            best_solution = copy.deepcopy(solution)
-            best_problem = problem
-        min_cost = best_solution.cost
+        solution = construct_solution(problem, True)
+        best_solution = copy.deepcopy(solution)
 
         state = generate_state()
         no_change = 0
@@ -115,47 +109,45 @@ with tf.Session() as sess:
         #print(sess.run(tf.report_uninitialized_variables()))
         print("episode: {}".format(episode))
 
-        for rollout in range(max_rollout_num):
+        for rollout in tqdm(range(max_rollout_num), desc='episode{}_rollout:'.format(episode)):
             #确定特征shape=(68)
             local_observation = sess.run(embed_features, feed_dict={solution_features:features}).reshape(-1,).tolist()
             observation = state + local_observation
 
             #选择动作
             action = dqn.choose_action(observation)
-            next_solution, label = env_step(problem, solution, action)
+            next_solution, label = env_step(problem, solution, action, no_change)
             if not validate_solution(next_solution, problem):
                 continue
 
             next_solution.cost = next_solution.get_cost(problem)
             delta = solution.cost - next_solution.cost
-
-            #输出rollout%50结果
-            '''
-            if rollout % 50 and episode % 10 == 0:
-                print("rollout num {}".format(rollout), end="\t", file=f)
-                print("action:{}".format(action), end="\t", file=f)
-                print("delta:{}".format(delta), file=f)
-                print("solution_cost:{}".format(solution.cost), file=f)
-                print("next_solution_cost:{}".format(next_solution.cost), file=f)
-                print("best_solution_cost:{}".format(best_solution.cost), file=f)
-                f.flush()
-            '''
+            
+            
+            #输出结果
+            if rollout % 2000 == 0 and episode % 5 == 0:
+                print("rollout num {}".format(rollout), end="\t")
+                print("action:{}".format(action), end="\t")
+                print("delta:{}".format(delta))
+                print("solution_cost:{}".format(solution.cost))
+                print("next_solution_cost:{}".format(next_solution.cost))
+                print("best_solution_cost:{}".format(best_solution.cost))
+            
+            
             reward = 0
             if delta > 0:
                 solution = copy.deepcopy(next_solution)
+                reward += (1 * delta)
                 no_change = 0
             else:
+                reward += (1 * delta)
                 no_change += 1
-            reward += (1 * delta)
 
             min_delta = best_solution.cost - next_solution.cost
             if min_delta > 0:
                 best_solution = copy.deepcopy(next_solution)
-                print("当前最优解为：")
-                best_solution.show_path()
-                print(best_solution.cost)
+                #print("当前最优解为:{}".format(best_solution.cost))
                 reward += (10 * min_delta)
-                best_problem = problem
             
             next_state = generate_state(state, action, reward, min_delta, delta)
             next_observation = next_state + local_observation
@@ -167,18 +159,63 @@ with tf.Session() as sess:
             if rollout > 10:
                 dqn.learn()
             state = next_state
-            if no_change == 10:
-                break
-        #all_best_solution.append(best_solution.cost)
-        if min_cost == best_solution.cost:
-            global_optimal += 1
-        if global_optimal == 200:
-            break
-    #cost = sum(all_best_solution) / len(all_best_solution)
-    #print("平均解：{}".format(cost))
+        
     end = datetime.datetime.now()
     time = (end - start).total_seconds()
-    print("算法总运行时间:{}秒".format(time))
-    print("全局最优解为{}".format(best_solution.get_cost(best_problem)))
-    paint(best_problem, best_solution)
-    f.close()
+    print("算法总训练时间:{}秒".format(time))
+
+
+    #inference
+    f = open("results.txt", "a+")
+    start = datetime.datetime.now()
+    test_problem = generate_problem()
+    solution = construct_solution(test_problem, True)
+    features = generate_solution_features(test_problem, solution)
+    best_solution = copy.deepcopy(solution)
+    for rollout in tqdm(range(max_rollout_num), desc='Test'):
+        local_observation = sess.run(embed_features, feed_dict={solution_features:features}).reshape(-1,).tolist()
+        observation = state + local_observation
+        #选择动作
+        action = dqn.choose_action(observation)
+        next_solution, label = env_step(test_problem, solution, action)
+        if not validate_solution(next_solution, test_problem):
+            continue
+        next_solution.cost = next_solution.get_cost(test_problem)
+        delta = solution.cost - next_solution.cost
+        #输出rollout%50结果
+        if rollout % 500 and episode % 10 == 0:
+            print("rollout num {}".format(rollout), end="\t", file=f)
+            print("action:{}".format(action), end="\t", file=f)
+            print("delta:{}".format(delta), file=f)
+            print("solution_cost:{}".format(solution.cost), file=f)
+            print("next_solution_cost:{}".format(next_solution.cost), file=f)
+            print("best_solution_cost:{}".format(best_solution.cost), file=f)
+            f.flush()
+        reward = 0
+        if delta > 0:
+            solution = copy.deepcopy(next_solution)
+            reward += (1 * delta)
+        else:
+            reward += (1 * delta)
+
+        min_delta = best_solution.cost - next_solution.cost
+        if min_delta > 0:
+            best_solution = copy.deepcopy(next_solution)
+            #print("当前最优解为:{}".format(best_solution.cost))
+            reward += (10 * min_delta)
+        
+        next_state = generate_state(state, action, reward, min_delta, delta)
+        next_observation = next_state + local_observation
+        
+        #存储记忆
+        dqn.store_transition(observation, action, reward, next_observation)
+        
+        #学习
+        if rollout > 10:
+            dqn.learn()
+        state = next_state
+    end = datetime.datetime.now()
+    time = (end - start).total_seconds()
+    print("算法总训练时间:{}秒".format(time), file=f)
+    print("最优距离dist:{}".format(best_solution.cost()), file=f)
+f.close()
