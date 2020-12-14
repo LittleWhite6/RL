@@ -7,7 +7,7 @@ problem_seed = 0
 num_train_points = 20
 # Global 训练样本点数
 
-max_episodes = 500
+max_episodes = 5
 #共进行多少次训练
 
 max_rollout_num = 20000
