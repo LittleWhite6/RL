@@ -89,8 +89,9 @@ def validate_solution(solution, problem):
         return False
     return True
 
-
-with tf.Session() as sess:
+gpu_config = tf.ConfigProto()   #tf.configProto用来在创建session时，对session进行参数配置
+gpu_config.gpu_options.allow_growth = True  #动态申请显存
+with tf.Session(config=gpu_config) as sess:
     start = datetime.datetime.now()
     dqn = Deep_Q_network(action_num, num_full_features) # batch_size = 1记忆回放效果过低
     solution_features = tf.placeholder(tf.float32, [num_train_points,feature_size], "solution_features")
@@ -108,25 +109,26 @@ with tf.Session() as sess:
         no_change = 0
         features = generate_solution_features(problem, solution)
         #print(sess.run(tf.report_uninitialized_variables()))
+        local_observation = sess.run(embed_features, feed_dict={solution_features:features}).reshape(-1,).tolist()
+        #特征shape=(68)
+        observation = state + local_observation
         print("episode: {}".format(episode))
 
         for rollout in tqdm(range(max_rollout_num), desc='episode{}_rollout:'.format(episode)):
-            #确定特征shape=(68)
-            local_observation = sess.run(embed_features, feed_dict={solution_features:features}).reshape(-1,).tolist()
-            observation = state + local_observation
-
             #选择动作
             action = dqn.choose_action(observation)
             next_solution, label = env_step(problem, solution, action, no_change)
+            '''
             if not validate_solution(next_solution, problem):
                 continue
+            '''
 
             next_solution.cost = next_solution.get_cost(problem)
             delta = solution.cost - next_solution.cost
             
             
             #输出结果
-            if rollout % 2000 == 0 and episode % 5 == 0:
+            if rollout % 2000 == 0 and episode % 50 == 0:
                 print("rollout num {}".format(rollout), end="\t")
                 print("action:{}".format(action), end="\t")
                 print("delta:{}".format(delta))
@@ -155,12 +157,12 @@ with tf.Session() as sess:
             
             #存储记忆
             dqn.store_transition(observation, action, reward, next_observation)
-            
+            state = next_state
+            observation = next_observation
             #学习
             if rollout > 10:
                 dqn.learn()
-            state = next_state
-        
+
     end = datetime.datetime.now()
     time = (end - start).total_seconds()
     print("算法总训练时间:{}秒".format(time))
