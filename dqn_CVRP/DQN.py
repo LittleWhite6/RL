@@ -101,6 +101,7 @@ def generate_state(state=None, action=0, reward=0, delta_min=0, delta=0):
         state = [action, reward, delta_min, delta]
     return state
 
+    
 class Deep_Q_network:
     #建立神经网络
     def _build_net(self):
