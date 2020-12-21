@@ -4,16 +4,16 @@ EPSILON = 0.9
 problem_seed = 0
 # Global seed
 
-num_train_points = 20
+num_train_points = 50
 # Global 训练样本点数
 
-max_episodes = 500
+max_episodes = 2000
 #共进行多少次训练
 
 max_rollout_num = 20000
 #每次训练迭代多少次
 
-action_num = 10
+action_num = 22
 #动作个数
 
 num_full_features = 68

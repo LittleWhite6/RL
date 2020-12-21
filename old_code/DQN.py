@@ -101,7 +101,6 @@ def generate_state(state=None, action=0, reward=0, delta_min=0, delta=0):
         state = [action, reward, delta_min, delta]
     return state
 
-    
 class Deep_Q_network:
     #建立神经网络
     def _build_net(self):
@@ -241,7 +240,7 @@ class Deep_Q_network:
         reward = batch_memory[:, self.n_features + 1]
 
         q_target[0, eval_act_index] = reward + self.gamma * np.max(q_next, axis=1)
-        q_target = np.reshape(q_target, (10))
+        q_target = np.reshape(q_target, (action_num))
 
         _, self.cost = self.sess.run([self._train_op, self.loss], feed_dict={self.s: batch_memory[:, :self.n_features], self.q_target: q_target})
         #self.cost_history(self.cost)    #记录cost误差

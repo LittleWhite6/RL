@@ -2,12 +2,9 @@ from DQN import *
 from ENV import *
 
 import datetime
-import matplotlib.pyplot as plt
 from tqdm import tqdm
 
-action_probs = [0] * action_num
-action_times = [0] * action_num
-
+#action_times = [0] * action_num
 
 def get_color(curr_color):
     if curr_color == 0:
@@ -25,37 +22,6 @@ def get_color(curr_color):
     if curr_color == 6:
         return 'k'
     return 'r'
-
-
-def paint(problem, solution):
-    for i in range(len(problem.locations)):  # 坐标放大
-        problem.locations[i][0] *= 1000
-        problem.locations[i][1] *= 1000
-    x = []
-    y = []
-    curr_color = 0
-    for i in range(len(solution.path)):
-        for j in range(len(solution.path[i])):
-            x.append(problem.locations[solution.path[i][j]][0])
-            y.append(problem.locations[solution.path[i][j]][1])
-            # one route exist
-        for index in range(1, len(x)):
-            l_x = []
-            l_y = []
-            l_x.append(x[index-1])
-            l_x.append(x[index])
-            l_y.append(y[index-1])
-            l_y.append(y[index])
-            plt.plot(l_x, l_y, color=get_color(curr_color))
-            plt.scatter(l_x, l_y, c='black')
-        x = []
-        y = []
-        curr_color += 1
-        if curr_color > 6:
-            curr_color = 0
-    plt.show()
-    plt.pause(0.1)
-    plt.close()
 
 
 def initialize_uninitialized(sess):
@@ -128,7 +94,7 @@ with tf.Session(config=gpu_config) as sess:
             
             
             #输出结果
-            if rollout % 2000 == 0 and episode % 50 == 0:
+            if rollout % 2000 == 0: #and episode % 50 == 0:
                 print("rollout num {}".format(rollout), end="\t")
                 print("action:{}".format(action), end="\t")
                 print("delta:{}".format(delta))
@@ -140,6 +106,8 @@ with tf.Session(config=gpu_config) as sess:
             reward = 0
             if delta > 0:
                 solution = copy.deepcopy(next_solution)
+                features = generate_solution_features(problem, solution)
+                local_observation = sess.run(embed_features, feed_dict={solution_features:features}).reshape(-1,).tolist()
                 reward += (1 * delta)
                 no_change = 0
             else:
@@ -162,8 +130,56 @@ with tf.Session(config=gpu_config) as sess:
             #学习
             if rollout > 10:
                 dqn.learn()
+    
 
     end = datetime.datetime.now()
     time = (end - start).total_seconds()
     print("算法总训练时间:{}秒".format(time))
     saver.save(sess, "Model/cvrp_{}_model.ckpt".format(num_train_points))
+
+
+    #inference
+    start = datetime.datetime.now()
+    best_solutions_cost = []
+    for episode in range(2000):
+        problem = generate_problem()
+        solution = construct_solution(problem, True)
+        best_solution = copy.deepcopy(solution)
+        state = generate_state()
+        no_change = 0
+        features = generate_solution_features(problem, solution)
+        local_observation = sess.run(embed_features, feed_dict={solution_features:features}).reshape(-1,).tolist()
+        observation = state + local_observation
+        for rollout in tqdm(range(max_rollout_num), desc='episode{}_rollout:'.format(episode)):
+            action = dqn.choose_action(observation)
+            next_solution, label = env_step(problem, solution, action, no_change)
+            next_solution.cost = next_solution.get_cost(problem)
+            delta = solution.cost - next_solution.cost
+            if delta > 0:
+                solution = copy.deepcopy(next_solution)
+                no_change = 0
+            else:
+                no_change += 1
+            if no_change > 50:
+                break
+            min_delta = best_solution.cost - next_solution.cost
+            if min_delta > 0:
+                best_solution = copy.deepcopy(next_solution)
+            next_state = generate_state(state, action, reward, min_delta, delta)
+            next_observation = next_state + local_observation
+            state = next_state
+            observation = next_observation
+        print(best_solution.cost)
+        best_solutions_cost.append(best_solution.cost)
+    end = datetime.datetime.now()
+    time = (end - start).total_seconds()
+
+    print("算法总推理时间:{}秒".format(time))
+    mean_cost = np.mean(best_solutions_cost)
+    print("solution_best_cost:{}".format(mean_cost))
+
+    f = open("results.txt", "a+")
+    print("cvrp_{}_result:".format(num_train_points), file=f)
+    print("算法总推理时间:{}秒".format(time), file=f)
+    print("solution_best_cost:{}".format(mean_cost), file=f)
+    f.close()
