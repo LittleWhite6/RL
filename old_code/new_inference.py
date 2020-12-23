@@ -5,6 +5,7 @@ from ENV import *
 import datetime
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+import os
 
 gpu_config = tf.ConfigProto()
 gpu_config.gpu_options.allow_growth = True
@@ -21,7 +22,7 @@ with tf.Session(config=gpu_config) as sess:
 
     #加载参数
     new_saver = tf.train.Saver()
-    new_saver.restore(sess, tf.train.latest_checkpoint('./Model'))
+    new_saver.restore(sess, tf.train.latest_checkpoint('./old_code/Model'))
     '''
     生成计算图
     #tensorboard --logdir=C:\python
@@ -41,8 +42,13 @@ with tf.Session(config=gpu_config) as sess:
     #记录推理开始时间
     start = datetime.datetime.now()
 
+    #绘制每次rollout所得的解cost
+    x = []
+    y1 = []
+    y2 = []
+
     #Inference
-    for episode in range(2000):
+    for episode in range(5):
         problem = generate_problem()
         solution = construct_solution(problem, True)
         best_solution = copy.deepcopy(solution)
@@ -67,10 +73,15 @@ with tf.Session(config=gpu_config) as sess:
             else:
                 reward += (1 * delta)
                 no_change += 1
-                
             
-            if no_change > 20:
-                break
+
+            if rollout % 1 == 0:
+                x.append(rollout)
+                y1.append(solution.cost)
+                y2.append(best_solution.cost)
+
+            #if no_change > 2000:
+                #break
             
             
             min_delta = best_solution.cost - next_solution.cost
@@ -83,6 +94,14 @@ with tf.Session(config=gpu_config) as sess:
             observation = next_observation
         print(best_solution.cost)
         best_solutions.append(best_solution.cost)
+
+        plt.plot(x, y1, color='r')
+        plt.plot(x, y2, color='b')
+        plt.show()
+        x = []
+        y1 = []
+        y2 = []
+
     mean_cost = np.mean(best_solutions)
     print("cvrp_{}_cost: {}".format(num_train_points, mean_cost))
     end = datetime.datetime.now()

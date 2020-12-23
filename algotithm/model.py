@@ -5,11 +5,12 @@ import torch.nn.functional as F
 from cvrp import *
 
 
-class embed_net(nn.Module):
+class GAT_net(nn.Module):
     #定义嵌入网络的结构
-    def __init__(self, problem, solution):
+    def __init__(self, feature, adjacency_M, input_dim, out_dim):
         super(embed_net, self).__init__()
         
+
     
-    def forward():
+    def forward(self, feature):
         pass

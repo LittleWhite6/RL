@@ -26,7 +26,7 @@ learning_rate = 0.01
 #new_Q(s1,a1) = old_Q(s1,a1) + alpha*(lambda*maxQ(s2))
 #决策部分等到更新完了再做
 
-feature_size = 6
+feature_size = 8
 # feature = [node_number, coordinate_x, coordinate_y, node_capacity, route_number, node_in_route_position, vehicle_load(车辆到当前节点的负载)，total_route_demand]
 
 fresh_time = 60

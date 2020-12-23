@@ -4,7 +4,7 @@ EPSILON = 0.9
 problem_seed = 0
 # Global seed
 
-num_train_points = 50
+num_train_points = 20
 # Global 训练样本点数
 
 max_episodes = 2000
