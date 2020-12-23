@@ -122,7 +122,7 @@ def random_construct(problem, solution):
     return solution
 
 
-def construct_solution(problem, default_random):
+def construct_solution(problem, default_random = True):
     #random construct
     if default_random:
         node_list = [i+1 for i in range(num_train_points)]
@@ -183,7 +183,7 @@ class Problem:
 class Solution:
     def __init__(self, problem, paths):
         self.path = paths
-        self.cost = self.get_cost(problem)  #init_cost = 0?
+        self.cost = self.get_cost(problem)  
         self.path_load = [] #测试算子用列表
 
 
