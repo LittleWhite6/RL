@@ -36,7 +36,7 @@ def env_step(problem, solution, action, no_change):
             paths_intra_ls[path] += 1   #可以优先选择改进少的路径优化
         else:
             paths_intra_ls.pop(path)
-    elif action in range(3, 9):
+    elif action in range(3, 21):
         paths_inter_ls = {}
         n = len(solution.path)
         '''
@@ -52,13 +52,38 @@ def env_step(problem, solution, action, no_change):
         elif action == 4:
             next_solution.path[path_first], next_solution.path[path_second], label = inter_Reverse_cross(problem, solution.path[path_first], solution.path[path_second])
         elif action == 5:
-            segment = random.randint(1, 3)
-            next_solution.path[path_first], next_solution.path[path_second], label = Symmetric_exchange(problem, solution.path[path_first], solution.path[path_second], [segment, segment])
-        elif action == 6: 
-            next_solution.path[path_first], next_solution.path[path_second], label = Asymmetric_exchange(problem, solution.path[path_first], solution.path[path_second], [random.randint(1, 3), random.randint(1, 3)])
-        elif action ==7:
-            next_solution.path[path_first], next_solution.path[path_second], label = Relocate(problem, solution.path[path_first], solution.path[path_second], random.randint(1, 3))
-        elif action ==8:
+            next_solution.path[path_first], next_solution.path[path_second], label = Symmetric_exchange(problem, solution.path[path_first], solution.path[path_second], [1, 1])
+        elif action == 6:
+            next_solution.path[path_first], next_solution.path[path_second], label = Symmetric_exchange(problem, solution.path[path_first], solution.path[path_second], [2, 2])
+        elif action == 7:
+            next_solution.path[path_first], next_solution.path[path_second], label = Symmetric_exchange(problem, solution.path[path_first], solution.path[path_second], [3, 3])
+
+        elif action == 8: 
+            next_solution.path[path_first], next_solution.path[path_second], label = Asymmetric_exchange(problem, solution.path[path_first], solution.path[path_second], [1, 1])
+        elif action == 9: 
+            next_solution.path[path_first], next_solution.path[path_second], label = Asymmetric_exchange(problem, solution.path[path_first], solution.path[path_second], [1, 2])
+        elif action == 10: 
+            next_solution.path[path_first], next_solution.path[path_second], label = Asymmetric_exchange(problem, solution.path[path_first], solution.path[path_second], [1, 3])
+        elif action == 11: 
+            next_solution.path[path_first], next_solution.path[path_second], label = Asymmetric_exchange(problem, solution.path[path_first], solution.path[path_second], [2, 1])
+        elif action == 12: 
+            next_solution.path[path_first], next_solution.path[path_second], label = Asymmetric_exchange(problem, solution.path[path_first], solution.path[path_second], [2, 2])
+        elif action == 13: 
+            next_solution.path[path_first], next_solution.path[path_second], label = Asymmetric_exchange(problem, solution.path[path_first], solution.path[path_second], [2, 3])
+        elif action == 14: 
+            next_solution.path[path_first], next_solution.path[path_second], label = Asymmetric_exchange(problem, solution.path[path_first], solution.path[path_second], [3, 1])
+        elif action == 15: 
+            next_solution.path[path_first], next_solution.path[path_second], label = Asymmetric_exchange(problem, solution.path[path_first], solution.path[path_second], [3, 2])
+        elif action == 16: 
+            next_solution.path[path_first], next_solution.path[path_second], label = Asymmetric_exchange(problem, solution.path[path_first], solution.path[path_second], [3, 3])
+
+        elif action ==17:
+            next_solution.path[path_first], next_solution.path[path_second], label = Relocate(problem, solution.path[path_first], solution.path[path_second], 1)
+        elif action ==18:
+            next_solution.path[path_first], next_solution.path[path_second], label = Relocate(problem, solution.path[path_first], solution.path[path_second], 2)
+        elif action ==19:
+            next_solution.path[path_first], next_solution.path[path_second], label = Relocate(problem, solution.path[path_first], solution.path[path_second], 3)
+        elif action ==20:
             next_solution, label = Cyclic_exchange(problem, solution)
         #此次优化成功
         if label:
@@ -67,7 +92,7 @@ def env_step(problem, solution, action, no_change):
         else:
             paths_inter_ls.pop(path_first)
             paths_inter_ls.pop(path_second)
-    elif action == 9 and no_change == 20:
+    elif action == 21 and no_change == 20:
         next_solution = Random_permute(problem, solution)
     else:
         return next_solution, label

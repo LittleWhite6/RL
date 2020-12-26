@@ -7,21 +7,21 @@ problem_seed = 0
 num_train_points = 20
 # Global 训练样本点数
 
-max_episodes = 500
+max_episodes = 2000
 #共进行多少次训练
 
 max_rollout_num = 20000
 #每次训练迭代多少次
 
-action_num = 10
+action_num = 20
 #动作个数
 
 num_full_features = 68
 
-discount_factor = 0.9
+DISCOUNT_FACTOR = 0.9
 #奖励折扣因子lambda
 
-learning_rate = 0.01
+LR = 0.01
 #学习效率alpha < 1 , 表示当前误差有多少要被学习
 #new_Q(s1,a1) = old_Q(s1,a1) + alpha*(lambda*maxQ(s2))
 #决策部分等到更新完了再做
@@ -31,3 +31,21 @@ feature_size = 8
 
 fresh_time = 60
 #fresh time for one move (1m)
+
+Dropout = 0.6
+#Dropout rate (1 - keep probability)
+
+Alpha = 0.2
+#GAT's Alpha for the LeakyReLu
+
+N_heads = 8
+# Multi-head attention nums
+
+WEIGHT_DECAY = 5e-4
+
+MEMORY_CAPACITY = 2000
+# 记忆库容量
+
+TARGET_REPLACE_ITER = 100
+
+BATCH_SIZE = 32
