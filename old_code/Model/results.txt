@@ -1,9 +1,0 @@
-cvrp_20_result:
-算法总推理时间:169.999652秒
-solution_best_cost:7.108872770890368
-cvrp_50_result:
-算法总推理时间:601.78003秒
-solution_best_cost:13.899364900809363
-cvrp_100_result:
-算法总推理时间:1521.061699秒
-solution_best_cost:22.745408364588787
