@@ -4,7 +4,7 @@ EPSILON = 0.9
 problem_seed = 0
 # Global seed
 
-num_train_points = 20
+num_train_points = 100
 # Global 训练样本点数
 
 max_episodes = 5000
@@ -13,7 +13,7 @@ max_episodes = 5000
 max_rollout_num = 20000
 #每次训练迭代多少次
 
-action_num = 22
+action_num = 18
 #动作个数
 
 num_full_features = 68
@@ -40,6 +40,9 @@ Alpha = 0.2
 
 N_heads = 8
 # Multi-head attention nums
+
+NUM_PATHS_TO_RUIN = 2
+# 扰乱算子的参数，随机摧毁存在解决方案的2个路径
 
 WEIGHT_DECAY = 5e-4
 

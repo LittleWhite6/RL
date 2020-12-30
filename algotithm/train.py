@@ -125,11 +125,12 @@ if __name__ == "__main__":
         feature = model.embed_net(feature, adjacency_M)
         # 解决方案特征值, shape = (64)
         state = generate_state()
+        best_no_change = 0
 
         for rollout in tqdm(range(max_rollout_num), desc='episode{}_rollout'.format(episode)):
             observation = torch.cat((state, feature))
             action = model.choose_action(observation)
-            next_solution, step_delta = env_step(rollout, problem, solution, action, no_change)
+            next_solution, step_delta = env_step(rollout, problem, solution, action)
             next_solution.cost = next_solution.get_cost(problem)
             '''
             if not validate_solution(next_solution, problem):
@@ -157,6 +158,8 @@ if __name__ == "__main__":
                 best_solution = copy.deepcopy(next_solution)
                 #print("当前最优解为:{}".format(best_solution.cost))
                 reward += (10 * min_delta)
+            else:
+                best_no_change += 1
             #print_rollout_iteration(rollout, action, delta, solution.cost, next_solution.cost, best_solution.cost, episode)
             state = generate_state(state, action, reward, min_delta, delta)
             observation_ = torch.cat((state, feature))
@@ -164,16 +167,23 @@ if __name__ == "__main__":
             observation = observation_
             if model.memory_counter > MEMORY_CAPACITY:
                 model.learn()
-            
-            if no_change > 1000:
+
+            # pertubation controller
+            if no_change > 6:
+                problem.record_solution(solution.path, solution.cost)
+                if solution.cost / best_solution.cost < 1.01:
+                    solution.path = pertubation_operator(problem, solution.path, rollout)
+                else:
+                    solution.path = pertubation_operator(problem, best_solution.path, rollout)
+                solution.cost = solution.get_cost(problem)
+                no_change = 0
+            if best_no_change == 1000:
                 break
 
-        print(best_solution.cost)
         #每经历1000次采样保存模型
         if episode % 1000 == 0 and episode != 0:
             torch.save(model, './Model/{}_episode_{}.pkl'.format(num_train_points,episode))
+        print(best_solution.cost)
     end = datetime.datetime.now()
     time = (end - start).total_seconds()
     print("算法总训练时间:{}秒".format(time))
-
-

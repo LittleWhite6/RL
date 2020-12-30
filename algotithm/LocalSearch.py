@@ -188,7 +188,7 @@ def Symmetric_exchange(problem, path_first, path_second, segments):
         path_second = path_second[:label[2]] + path_temp[label[0]:label[1]+1] + path_second[label[3] + 1:]
     return path_first, path_second, label, max_delta
 
-            
+
 # operator7: Asymmetric-exchange
 def Asymmetric_exchange(problem, path_first, path_second, segments):
     return Symmetric_exchange(problem, path_first, path_second, segments)
@@ -258,15 +258,3 @@ def Random_permute(problem, solution):
         solution.path.pop(destory_paths[i])
     solution = random_construct(problem, solution)
     return solution
-
-
-'''
-# operator11: Random-exchang
-def Random_exchange(problem, solution):
-    min_len = float("inf")
-    for i in range(len(solution.path)):
-        curr_len = len(solution.path[i])
-        if curr_len < min_len:
-            min_len = curr_len
-    m = random.randint(1, min_len)
-'''

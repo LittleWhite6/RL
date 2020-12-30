@@ -1,10 +1,12 @@
 from train import *
+import sys
 
-model = torch.load("./Model/50_episode_1000.pkl")
+action_times = np.zeros(shape=(action_num))
+model = torch.load("./Model/100_episode_4500.pkl")
 #print_net_parameters(model.embed_net)
 
+f = open("resulut.txt", "a+")
 if __name__ == "__main__":
-    model = MODEL()
     model.embed_net.eval()
     start = datetime.datetime.now()
     for episode in range(2000):
@@ -24,12 +26,11 @@ if __name__ == "__main__":
         feature = model.embed_net(feature, adjacency_M)
         # 解决方案特征值, shape = (64)
         state = generate_state()
-
+        observation = torch.cat((state, feature))
         for rollout in tqdm(range(max_rollout_num), desc='episode{}_rollout'.format(episode)):
-            observation = torch.cat((state, feature))
             action = model.choose_action(observation)
-            next_solution, label = env_step(problem, solution, action, no_change)
-
+            action_times[action] += 1
+            next_solution, label = env_step(rollout, problem, solution, action, no_change)
             next_solution.cost = next_solution.get_cost(problem)
             delta = solution.cost - next_solution.cost
             reward = 0
@@ -48,26 +49,17 @@ if __name__ == "__main__":
                 best_solution = copy.deepcopy(next_solution)
                 #print("当前最优解为:{}".format(best_solution.cost))
                 reward += (10 * min_delta)
-
-
-            #输出结果
-            if rollout % 500 == 0 and episode % 100 == 0:
-                print("rollout num {}".format(rollout), end="\t")
-                print("action:{}".format(action), end="\t")
-                print("delta:{}".format(delta))
-                print("solution_cost:{}".format(solution.cost))
-                print("next_solution_cost:{}".format(next_solution.cost))
-                print("best_solution_cost:{}".format(best_solution.cost))
-
-
             state = generate_state(state, action, reward, min_delta, delta)
-            observation_ = torch.cat((state, feature))
-            model.store_transition(observation.detach().numpy(), action, reward, observation_.detach().numpy())
-            observation = observation_
-            if no_change > 100:
-                break
+            observation = torch.cat((state, feature))
+                
+
+        print(best_solution.cost)
+        sys.stdout.flush()
         best_solutions.append(best_solution.cost)
     end = datetime.datetime.now()
     time = (end - start).total_seconds()
+    print("算法总训练时间:{}秒".format(time), file=f)
+    print("best_solution.cost: ",np.mean(best_solutions), file=f)
     print("算法总训练时间:{}秒".format(time))
     print("best_solution.cost: ",np.mean(best_solutions))
+    f.close()

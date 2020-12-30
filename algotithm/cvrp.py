@@ -77,6 +77,10 @@ def generate_problem():
         capacities[i] = np.random.randint(9) + 1
 
     init_problem = Problem(locations, capacities)
+
+    np.random.seed(problem_seed * 10)
+    random.seed(problem_seed * 10)
+    
     return init_problem
 
 
@@ -182,6 +186,8 @@ class Problem:
             dist_matrix_row = []
         self.change_at = [0] * (len(self.locations) + 1)
         self.no_improvement_at = {}
+        self.num_traversed = np.zeros((len(locations), len(locations)))
+        self.num_solutions = 0
 
     def reset_change_at_and_no_improvement_at(self):
         self.change_at = [0] * (len(self.locations) + 1)
@@ -201,6 +207,18 @@ class Problem:
         return self.change_at[index_first] >= no_improvement_at or \
             self.change_at[index_second] >= no_improvement_at or \
             self.change_at[index_third] >= no_improvement_at
+    
+    def get_frequency(self, from_index, to_index):
+        return self.num_traversed[from_index][to_index] / (1.0 + self.num_solutions)
+    
+    def record_solution(self, solution, distance):
+        self.num_solutions += 1.0 / distance
+        for path in solution:
+            if len(path) > 2:
+                for to_index in range(1, len(path)):
+                    self.num_traversed[path[to_index - 1]][path[to_index]] += 1.0 / distance
+                    self.num_traversed[path[to_index]][path[to_index - 1]] += 1.0 / distance
+
 
 class Solution:
     def __init__(self, problem, paths):
